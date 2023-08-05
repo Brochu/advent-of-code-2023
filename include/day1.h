@@ -1,8 +1,9 @@
 #pragma once
+#include <string>
 
 namespace Solution {
 
-int part_1();
-int part_2();
+std::string part_1();
+std::string part_2();
 
 }
