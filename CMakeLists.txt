@@ -7,12 +7,17 @@ set (CMAKE_CXX_STANDARD 20)
 message(" -=- Creating build folder for Day : ${DAY} -=- ")
 
 set (headers
+    ${CMAKE_CURRENT_LIST_DIR}/include/day${DAY}.h
     ${CMAKE_CURRENT_LIST_DIR}/include/parsing.h
 )
 set (source
+    ${CMAKE_CURRENT_LIST_DIR}/src/day${DAY}.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/parsing.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
 )
+
+message(" -=- Headers generated: ${headers} -=- ")
+message(" -=- Source generated: ${source} -=- ")
 
 add_executable (AoC2023 ${source} ${headers})
 
