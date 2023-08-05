@@ -2,6 +2,4 @@
 
 namespace Parse {
 
-int tests();
-
 }
