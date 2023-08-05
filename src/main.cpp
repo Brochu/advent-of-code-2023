@@ -1,7 +1,11 @@
 #include <stdio.h>
-
 #include "parsing.h"
+
+#if   DAY == 1
 #include "day1.h"
+#elif DAY == 2
+#include "day2.h"
+#endif
 
 int main(int argc, char **argv) {
     printf("[MAIN] Solutions for day ...\n");
