@@ -1,2 +1,3 @@
 (library
- (name helpers))
+ (name ocaml)
+ (modules helpers day1))

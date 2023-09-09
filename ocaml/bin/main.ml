@@ -1,4 +1,4 @@
+open Ocaml.Day1
 open Core
-open Helpers
 
-let () = print_endline (string_of_int x)
+let () = print_endline (string_of_int day1)
