@@ -5,11 +5,11 @@
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github Brochu/advent-of-code-2023))
 
-(authors "Author Name")
+(authors "Brochu")
 
-(maintainers "Maintainer Name")
+(maintainers "Brochu")
 
 (license LICENSE)
 
@@ -17,10 +17,10 @@
 
 (package
  (name ocaml)
- (synopsis "A short synopsis")
- (description "A longer description")
+ (synopsis "OCaml implementation of AoC2023")
+ (description "At first, I wanted to complete AoC2023 with C++, but now I am maybe want to try out OCaml for this challenge in order to get more comfortable with the language.")
  (depends ocaml dune)
  (tags
-  (topics "to describe" your project)))
+  (aoc adventofcode "Advent of Code" OCaml programming challenge)))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
