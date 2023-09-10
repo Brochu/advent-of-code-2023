@@ -1,10 +1,15 @@
 open Core
-open General.Helpers
-
-open Solutions.Day1
-open Solutions.Day2
+open Solutions
 
 let () =
-    print_endline (string_of_int x);
-    print_endline (string_of_int day1);
-    print_endline (string_of_int day2);
+    let day = (Array.get (Sys.get_argv ()) 1) in
+    let defaultfn () = "N/A" in
+    let (part1fn, part2fn) = match day with
+        | "1" -> (Day1.part1, Day1.part2)
+        | "2" -> (Day2.part1, Day2.part2)
+        | _ -> (defaultfn, defaultfn)
+    in
+    Printf.printf "[Day %s]\n\tPart 1 => %s\n\tPart 2 => %s\n"
+        day
+        (part1fn ())
+        (part2fn ());

@@ -1,1 +1,5 @@
-let day1 = 7
+let part1 () =
+    "69"
+
+let part2 () =
+    "70"

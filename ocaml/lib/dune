@@ -1,7 +1,9 @@
 (library
  (name general)
- (modules helpers))
+ (modules helpers)
+ (libraries core))
 
 (library
  (name solutions)
- (modules day1 day2))
+ (modules day1 day2)
+ (libraries general))
