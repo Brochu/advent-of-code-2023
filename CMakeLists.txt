@@ -8,7 +8,7 @@ set (CMAKE_BUILD_TYPE Debug)
 message(" -=- Creating build folder for Day : ${DAY} -=- ")
 
 set (headers
-    ${CMAKE_CURRENT_LIST_DIR}/include/day${DAY}.h
+    ${CMAKE_CURRENT_LIST_DIR}/include/day.h
     ${CMAKE_CURRENT_LIST_DIR}/include/parsing.h
 )
 set (source

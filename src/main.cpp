@@ -1,10 +1,6 @@
 #include <stdio.h>
 
-#if   DAY == 1
-#include "day1.h"
-#elif DAY == 2
-#include "day2.h"
-#endif
+#include "day.h"
 #include "parsing.h"
 
 int main(int argc, char **argv) {
