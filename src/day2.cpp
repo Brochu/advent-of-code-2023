@@ -2,12 +2,11 @@
 
 namespace Solution {
 
-std::string part_1() {
-    return "420";
-}
+int run(std::string *part1_out, std::string *part2_out) {
+    *part1_out = "420";
+    *part2_out = "421";
 
-std::string part_2() {
-    return "421";
+    return 69;
 }
 
 }

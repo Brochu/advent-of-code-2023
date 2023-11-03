@@ -3,7 +3,6 @@
 
 namespace Solution {
 
-std::string part_1();
-std::string part_2();
+int run(std::string *part1_out, std::string *part2_out);
 
 }
