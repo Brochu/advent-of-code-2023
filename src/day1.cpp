@@ -45,6 +45,7 @@ int run(std::string *part1_out, std::string *part2_out) {
     while(std::getline(std::cin, line)) {
         nums.push_back(atoi(line.c_str()));
     }
+    //int nums[5] = { 7, 7, -2, -7, -4 };
 
     *part1_out = part1(nums);
     *part2_out = part2(nums);
