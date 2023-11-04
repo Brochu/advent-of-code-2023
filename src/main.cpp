@@ -1,7 +1,5 @@
 #include <stdio.h>
-
 #include "day.h"
-#include "parsing.h"
 
 int main(int argc, char **argv) {
     std::string p1 = "";
