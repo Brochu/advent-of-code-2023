@@ -3,7 +3,9 @@ cmake_minimum_required (VERSION 3.10)
 project (AoC2023)
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set (CMAKE_CXX_STANDARD 20)
-set (CMAKE_BUILD_TYPE Debug)
+
+set (DEBUG_OPTIONS -g -O0 -Wall -Werror -pedantic)
+set (RELEASE_OPTIONS -O3 -Wall)
 
 message(" -=- Creating build folder for Day : ${DAY} -=- ")
 
@@ -21,6 +23,9 @@ message(" -=- Headers generated: ${headers} -=- ")
 message(" -=- Source generated: ${source} -=- ")
 
 add_executable (AoC2023 ${source} ${headers})
+
+target_compile_options(AoC2023 PUBLIC "$<$<CONFIG:DEBUG>:${DEBUG_OPTIONS}>")
+target_compile_options(AoC2023 PUBLIC "$<$<CONFIG:RELEASE>:${RELEASE_OPTIONS}>")
 
 target_include_directories(AoC2023
     PRIVATE
