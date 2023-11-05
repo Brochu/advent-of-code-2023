@@ -47,9 +47,7 @@ int run(std::string *part1_out, std::string *part2_out) {
     std::vector<int> nums;
     token = strtok_s(input.data(), "\n", &nextt);
     while(token) {
-        printf("%s, ", token);
         nums.push_back(atoi(token));
-
         token = strtok_s(NULL, "\n", &nextt);
     }
     //int nums[5] = { 7, 7, -2, -7, -4 };
