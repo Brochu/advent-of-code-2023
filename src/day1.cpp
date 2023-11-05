@@ -1,8 +1,10 @@
 #include "day.h"
+#include "parsing.h"
 
 #include <algorithm>
 #include <iostream>
 #include <span>
+#include <string.h>
 #include <vector>
 
 namespace Solution {
@@ -39,11 +41,16 @@ std::string part2(std::span<int> nums) {
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
-    std::vector<int> nums;
-    std::string line = "";
+    std::string input = INCLUDE_STR(".\\inputs\\day1.txt");
+    char *token, *nextt = nullptr;
 
-    while(std::getline(std::cin, line)) {
-        nums.push_back(atoi(line.c_str()));
+    std::vector<int> nums;
+    token = strtok_s(input.data(), "\n", &nextt);
+    while(token) {
+        printf("%s, ", token);
+        nums.push_back(atoi(token));
+
+        token = strtok_s(NULL, "\n", &nextt);
     }
     //int nums[5] = { 7, 7, -2, -7, -4 };
 
