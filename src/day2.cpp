@@ -74,20 +74,19 @@ std::string check_p2(std::span<char*> tokens) {
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
-    std::string input = INCLUDE_STR(".\\inputs\\day2.txt");
-    //std::string input = "abcdef\nbababc\nabbcde\nabcccd\naabcdd\nabcdee\nababab\n";
-    //std::string input = "abcde\nfghij\nklmno\npqrst\nfguij\naxcye\nwvxyz";
-    auto tokens = Parse::split_str(std::move(input));
+    std::string in = INCLUDE_STR(".\\inputs\\day2.txt");
+    std::vector<char*> test;
 
     uint64_t count2s = 0;
     uint64_t count3s = 0;
 
-    for(char *t : tokens) {
-        check_p1(std::span{t, strlen(t)}, count2s, count3s);
-    }
+    Parse::enum_str(std::move(in), [&test, &count2s, &count3s](char *token) mutable {
+        check_p1(std::span{token, strlen(token)}, count2s, count3s);
+        test.push_back(token);
+    });
 
     *part1_out = std::to_string(count2s * count3s);
-    *part2_out = check_p2(tokens);
+    *part2_out = check_p2(test);
 
     return 0;
 }
