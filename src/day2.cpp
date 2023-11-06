@@ -60,8 +60,7 @@ std::string check_p2(std::span<char*> tokens) {
             char *s = tokens[j];
 
             if (strdiff(f, s) == 1) {
-                printf("%s <=> %s\n", f, s);
-
+                //printf("%s <=> %s\n", f, s);
                 std::string res = "";
                 for(int i = 0; i < strlen(f); i++) {
                     if (f[i] == s[i]) res += f[i];
@@ -90,7 +89,7 @@ int run(std::string *part1_out, std::string *part2_out) {
     *part1_out = std::to_string(count2s * count3s);
     *part2_out = check_p2(tokens);
 
-    return 1;
+    return 0;
 }
 
 }
