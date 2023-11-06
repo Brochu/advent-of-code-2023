@@ -4,8 +4,8 @@ project (AoC2023)
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set (CMAKE_CXX_STANDARD 20)
 
-set (DEBUG_OPTIONS -g -O0 -Wall -Werror -pedantic)
-set (RELEASE_OPTIONS -O3 -Wall)
+set (DEBUG_OPTIONS -g -O0)
+set (RELEASE_OPTIONS -O3)
 
 message(" -=- Creating build folder for Day : ${DAY} -=- ")
 
