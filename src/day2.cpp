@@ -41,20 +41,43 @@ void check_p1(std::span<char> token, uint64_t &count2s, uint64_t &count3s) {
     //printf("(%lld, %lld)\n", count2s, count3s);
 }
 
+uint8_t strdiff(const char *s1, const char *s2) {
+    uint8_t diffs = 0;
+
+    for(int i = 0; i < strlen(s1); i++) {
+        if (s1[i] != s2[i]) diffs++;
+    }
+
+    return diffs;
+}
+
 std::string check_p2(std::span<char*> tokens) {
-    for(char *f : tokens) {
-        for(char *s : tokens) {
-            printf("%s == %s\n", f, s);
+    for(int i = 0; i < tokens.size(); i++) {
+        for(int j = 0; j < tokens.size(); j++) {
+            if (i == j) continue;
+
+            char *f = tokens[i];
+            char *s = tokens[j];
+
+            if (strdiff(f, s) == 1) {
+                printf("%s <=> %s\n", f, s);
+
+                std::string res = "";
+                for(int i = 0; i < strlen(f); i++) {
+                    if (f[i] == s[i]) res += f[i];
+                }
+                return res;
+            }
         }
     }
 
-    return "0";
+    return "NotFound";
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
-    //std::string input = INCLUDE_STR(".\\inputs\\day2.txt");
+    std::string input = INCLUDE_STR(".\\inputs\\day2.txt");
     //std::string input = "abcdef\nbababc\nabbcde\nabcccd\naabcdd\nabcdee\nababab\n";
-    std::string input = "abcde\nfghij\nklmno\npqrst\nfguij\naxcye\nwvxyz";
+    //std::string input = "abcde\nfghij\nklmno\npqrst\nfguij\naxcye\nwvxyz";
     auto tokens = Parse::split_str(std::move(input));
 
     uint64_t count2s = 0;
