@@ -4,11 +4,11 @@
 namespace Solution {
 
 std::string part1() {
-    return {};
+    return "NotCompleted";
 }
 
 std::string part2() {
-    return {};
+    return "NotCompleted";
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
