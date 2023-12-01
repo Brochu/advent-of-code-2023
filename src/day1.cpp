@@ -1,10 +1,36 @@
 #include "day.h"
 #include "parsing.h"
 
+#include <span>
+
 namespace Solution {
 
 bool is_digit_part1(const char *t) {
     return (*t) >= '0' && (*t) <= '9';
+}
+
+std::string part1(std::span<char*> tokens) {
+    int total = 0;
+    for (const char *token : tokens) {
+        size_t i = 0;
+        size_t j = strlen(token) - 1;
+
+        while(!(is_digit_part1(&token[i]) && is_digit_part1(&token[j]))) {
+            if (!is_digit_part1(&token[i])) {
+                i++;
+            }
+
+            if (!is_digit_part1(&token[j])) {
+                j--;
+            }
+        }
+
+        int first = token[i] - '0';
+        int second = token[j] - '0';
+        total += (first * 10) + second;
+    }
+
+    return std::to_string(total);
 }
 
 bool is_digit_part2(const char *t) {
@@ -22,7 +48,7 @@ bool is_digit_part2(const char *t) {
     return (*t) >= '0' && (*t) <= '9';
 }
 
-uint64_t get_digit(const char *t) {
+int get_digit(const char *t) {
     std::string str(t);
     if (strstr(str.substr(0, 3).c_str(), "one") != NULL) { return 1; }
     if (strstr(str.substr(0, 3).c_str(), "two") != NULL) { return 2; }
@@ -41,33 +67,11 @@ uint64_t get_digit(const char *t) {
     return 0;
 }
 
-int run(std::string *part1_out, std::string *part2_out) {
-    std::string input = INCLUDE_STR(".\\inputs\\day1.txt");
-    //std::string input = "1abc2\npqr3stu8vwx\na1b2c3d4e5f\ntreb7uchet\n";
-    //std::string input = "two1nine\neightwothree\nabcone2threexyz\nxtwone3four\n4nineeightseven2\nzoneight234\n7pqrstsixteen\n";
-    uint64_t totalp1 = 0;
-    uint64_t totalp2 = 0;
-
-    Parse::enum_str(std::move(input), "\n", [&totalp1, &totalp2](char *token) {
+std::string part2(std::span<char*> tokens) {
+    int total = 0;
+    for (const char *token : tokens) {
         size_t i = 0;
         size_t j = strlen(token) - 1;
-
-        while(!(is_digit_part1(&token[i]) && is_digit_part1(&token[j]))) {
-            if (!is_digit_part1(&token[i])) {
-                i++;
-            }
-
-            if (!is_digit_part1(&token[j])) {
-                j--;
-            }
-        }
-
-        uint64_t first = token[i] - '0';
-        uint64_t second = token[j] - '0';
-        totalp1 += (first * 10) + second;
-
-        i = 0;
-        j = strlen(token) - 1;
 
         while(!(is_digit_part2(&token[i]) && is_digit_part2(&token[j]))) {
             if (!is_digit_part2(&token[i])) {
@@ -79,13 +83,20 @@ int run(std::string *part1_out, std::string *part2_out) {
             }
         }
 
-        first = get_digit(&token[i]);
-        second = get_digit(&token[j]);
-        totalp2 += (first * 10) + second;
-    });
+        int first = get_digit(&token[i]);
+        int second = get_digit(&token[j]);
+        total += (first * 10) + second;
+    };
 
-    *part1_out = std::to_string(totalp1);
-    *part2_out = std::to_string(totalp2);
+    return std::to_string(total);
+}
+
+int run(std::string *part1_out, std::string *part2_out) {
+    std::string input = INCLUDE_STR(".\\inputs\\day1.txt");
+    std::vector<char*> tokens = Parse::split_str(std::move(input), "\n");
+
+    *part1_out = part1(tokens);
+    *part2_out = part2(tokens);
 
     return 0;
 }
