@@ -4,15 +4,15 @@
 namespace Solution {
 
 std::string part1() {
-    return {};
+    return "NotCompleted";
 }
 
 std::string part2() {
-    return {};
+    return "NotCompleted";
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
-    std::string input = INCLUDE_STR(".\\inputs\\day0.txt");
+    std::string in = INCLUDE_STR(".\\inputs\\day0.txt");
 
     *part1_out = part1();
     *part2_out = part2();
