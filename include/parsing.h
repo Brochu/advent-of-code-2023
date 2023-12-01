@@ -11,7 +11,6 @@ std::vector<char*> split_str(std::string &&str);
 
 template<typename Fn>
 void enum_str(std::string &&str, const std::string &separator, Fn func) {
-    std::vector<char*> tokens;
     char *token, *nextt = nullptr;
 
     token = strtok_s(str.data(), separator.c_str(), &nextt);
