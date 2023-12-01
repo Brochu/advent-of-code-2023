@@ -5,49 +5,6 @@
 
 namespace Solution {
 
-bool is_digit_part1(const char *t) {
-    return (*t) >= '0' && (*t) <= '9';
-}
-
-std::string part1(std::span<char*> tokens) {
-    int total = 0;
-    for (const char *token : tokens) {
-        size_t i = 0;
-        size_t j = strlen(token) - 1;
-
-        while(!(is_digit_part1(&token[i]) && is_digit_part1(&token[j]))) {
-            if (!is_digit_part1(&token[i])) {
-                i++;
-            }
-
-            if (!is_digit_part1(&token[j])) {
-                j--;
-            }
-        }
-
-        int first = token[i] - '0';
-        int second = token[j] - '0';
-        total += (first * 10) + second;
-    }
-
-    return std::to_string(total);
-}
-
-bool is_digit_part2(const char *t) {
-    std::string str(t);
-    if (strstr(str.substr(0, 3).c_str(), "one") != NULL) { return true; }
-    if (strstr(str.substr(0, 3).c_str(), "two") != NULL) { return true; }
-    if (strstr(str.substr(0, 5).c_str(), "three") != NULL) { return true; }
-    if (strstr(str.substr(0, 4).c_str(), "four") != NULL) { return true; }
-    if (strstr(str.substr(0, 4).c_str(), "five") != NULL) { return true; }
-    if (strstr(str.substr(0, 3).c_str(), "six") != NULL) { return true; }
-    if (strstr(str.substr(0, 5).c_str(), "seven") != NULL) { return true; }
-    if (strstr(str.substr(0, 5).c_str(), "eight") != NULL) { return true; }
-    if (strstr(str.substr(0, 4).c_str(), "nine") != NULL) { return true; }
-
-    return (*t) >= '0' && (*t) <= '9';
-}
-
 int get_digit(const char *t) {
     std::string str(t);
     if (strstr(str.substr(0, 3).c_str(), "one") != NULL) { return 1; }
@@ -67,20 +24,40 @@ int get_digit(const char *t) {
     return 0;
 }
 
+bool is_digit_part1(const char *t) {
+    return (*t) >= '0' && (*t) <= '9';
+}
+
+std::string part1(std::span<char*> tokens) {
+    int total = 0;
+    for (const char *token : tokens) {
+        size_t i = 0, j = strlen(token) - 1;
+
+        while(!(is_digit_part1(&token[i]) && is_digit_part1(&token[j]))) {
+            if (!is_digit_part1(&token[i])) { i++; }
+            if (!is_digit_part1(&token[j])) { j--; }
+        }
+
+        int first = get_digit(&token[i]);
+        int second = get_digit(&token[j]);
+        total += (first * 10) + second;
+    }
+
+    return std::to_string(total);
+}
+
+bool is_digit_part2(const char *t) {
+    return get_digit(t) != 0;
+}
+
 std::string part2(std::span<char*> tokens) {
     int total = 0;
     for (const char *token : tokens) {
-        size_t i = 0;
-        size_t j = strlen(token) - 1;
+        size_t i = 0, j = strlen(token) - 1;
 
         while(!(is_digit_part2(&token[i]) && is_digit_part2(&token[j]))) {
-            if (!is_digit_part2(&token[i])) {
-                i++;
-            }
-
-            if (!is_digit_part2(&token[j])) {
-                j--;
-            }
+            if (!is_digit_part2(&token[i])) { i++; }
+            if (!is_digit_part2(&token[j])) { j--; }
         }
 
         int first = get_digit(&token[i]);
