@@ -20,14 +20,14 @@ std::string read_file(const std::string &path) {
     return content;
 }
 
-std::vector<char*> split_str(std::string &&str) {
+std::vector<char*> split_str(std::string &&str, const std::string &separator) {
     std::vector<char*> tokens;
     char *token, *nextt = nullptr;
 
-    token = strtok_s(str.data(), "\n", &nextt);
+    token = strtok_s(str.data(), separator.c_str(), &nextt);
     while(token) {
         tokens.push_back(token);
-        token = strtok_s(NULL, "\n", &nextt);
+        token = strtok_s(NULL, separator.c_str(), &nextt);
     }
 
     return tokens;

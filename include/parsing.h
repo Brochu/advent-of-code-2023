@@ -7,7 +7,7 @@
 namespace Parse {
 
 std::string read_file(const std::string &path);
-std::vector<char*> split_str(std::string &&str);
+std::vector<char*> split_str(std::string &&str, const std::string &separator);
 
 template<typename Fn>
 void enum_str(std::string &&str, const std::string &separator, Fn func) {
