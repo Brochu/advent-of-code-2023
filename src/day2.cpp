@@ -58,12 +58,28 @@ std::string part1(std::span<Game> games) {
     return std::to_string(result);
 }
 
+int calc_power(const Game &game) {
+    int min[3] = { 0 };
+
+    for (const Subset &sub : game.subsets) {
+        min[0] = std::max(min[0], sub.cubes[0]);
+        min[1] = std::max(min[1], sub.cubes[1]);
+        min[2] = std::max(min[2], sub.cubes[2]);
+    }
+    return min[0] * min[1] * min[2];
+}
+
 std::string part2(std::span<Game> games) {
-    return "NotCompleted";
+    size_t score = 0;
+
+    for (const Game &game : games) {
+        score += calc_power(game);
+    }
+    return std::to_string(score);
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
-    std::string in = INCLUDE_STR(".\\inputs\\day2_demo1.txt");
+    std::string in = INCLUDE_STR(".\\inputs\\day2.txt");
     std::vector<Game> games;
 
     Parse::enum_str(std::move(in), "\n", [&games](char *token) {
