@@ -36,11 +36,24 @@ size_t get_color_idx(const char *color) {
     else { return INTMAX_MAX; }
 }
 
-std::string part1() {
-    return "NotCompleted";
+bool is_possible() {
+    //TODO: Check if a game is possible
+    return true;
 }
 
-std::string part2() {
+std::string part1(std::span<Game> games) {
+    int max[3] = { 12, 13, 14 };
+    size_t result = 0;
+
+    for (const Game &game : games) {
+        if (is_possible()) {
+            result += game.id;
+        }
+    }
+    return std::to_string(result);
+}
+
+std::string part2(std::span<Game> games) {
     return "NotCompleted";
 }
 
@@ -72,11 +85,9 @@ int run(std::string *part1_out, std::string *part2_out) {
         }
         games.push_back({ games.size() + 1, subs });
     });
-    printf("%lld\n", games.size());
-    debug(games);
 
-    *part1_out = part1();
-    *part2_out = part2();
+    *part1_out = part1(games);
+    *part2_out = part2(games);
 
     return 0;
 }
