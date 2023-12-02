@@ -7,15 +7,15 @@ namespace Solution {
 
 int get_digit(const char *t) {
     std::string str(t);
-    if (strstr(str.substr(0, 3).c_str(), "one") != NULL) { return 1; }
-    if (strstr(str.substr(0, 3).c_str(), "two") != NULL) { return 2; }
-    if (strstr(str.substr(0, 5).c_str(), "three") != NULL) { return 3; }
-    if (strstr(str.substr(0, 4).c_str(), "four") != NULL) { return 4; }
-    if (strstr(str.substr(0, 4).c_str(), "five") != NULL) { return 5; }
-    if (strstr(str.substr(0, 3).c_str(), "six") != NULL) { return 6; }
-    if (strstr(str.substr(0, 5).c_str(), "seven") != NULL) { return 7; }
-    if (strstr(str.substr(0, 5).c_str(), "eight") != NULL) { return 8; }
-    if (strstr(str.substr(0, 4).c_str(), "nine") != NULL) { return 9; }
+    if (strcmp(str.substr(0, 3).c_str(), "one")   == 0) { return 1; }
+    if (strcmp(str.substr(0, 3).c_str(), "two")   == 0) { return 2; }
+    if (strcmp(str.substr(0, 5).c_str(), "three") == 0) { return 3; }
+    if (strcmp(str.substr(0, 4).c_str(), "four")  == 0) { return 4; }
+    if (strcmp(str.substr(0, 4).c_str(), "five")  == 0) { return 5; }
+    if (strcmp(str.substr(0, 3).c_str(), "six")   == 0) { return 6; }
+    if (strcmp(str.substr(0, 5).c_str(), "seven") == 0) { return 7; }
+    if (strcmp(str.substr(0, 5).c_str(), "eight") == 0) { return 8; }
+    if (strcmp(str.substr(0, 4).c_str(), "nine")  == 0) { return 9; }
 
     if ((*t) >= '0' && (*t) <= '9') {
         return (*t) - '0';
