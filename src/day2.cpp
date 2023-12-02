@@ -36,8 +36,13 @@ size_t get_color_idx(const char *color) {
     else { return INTMAX_MAX; }
 }
 
-bool is_possible() {
-    //TODO: Check if a game is possible
+bool is_possible(int max[3], const Game &game) {
+    for (const Subset &sub : game.subsets) {
+        if (sub.cubes[0] > max[0]) { return false; }
+        else if (sub.cubes[1] > max[1]) { return false; }
+        else if (sub.cubes[2] > max[2]) { return false; }
+    }
+
     return true;
 }
 
@@ -46,7 +51,7 @@ std::string part1(std::span<Game> games) {
     size_t result = 0;
 
     for (const Game &game : games) {
-        if (is_possible()) {
+        if (is_possible(max, game)) {
             result += game.id;
         }
     }
