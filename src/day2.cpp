@@ -49,7 +49,6 @@ bool is_possible(int max[3], const Game &game) {
 std::string part1(std::span<Game> games) {
     int max[3] = { 12, 13, 14 };
     size_t result = 0;
-
     for (const Game &game : games) {
         if (is_possible(max, game)) {
             result += game.id;
@@ -58,22 +57,18 @@ std::string part1(std::span<Game> games) {
     return std::to_string(result);
 }
 
-int calc_power(const Game &game) {
-    int min[3] = { 0 };
-
-    for (const Subset &sub : game.subsets) {
-        min[0] = std::max(min[0], sub.cubes[0]);
-        min[1] = std::max(min[1], sub.cubes[1]);
-        min[2] = std::max(min[2], sub.cubes[2]);
-    }
-    return min[0] * min[1] * min[2];
-}
-
 std::string part2(std::span<Game> games) {
     size_t score = 0;
 
     for (const Game &game : games) {
-        score += calc_power(game);
+        int min[3] = { 0 };
+
+        for (const Subset &sub : game.subsets) {
+            min[0] = std::max(min[0], sub.cubes[0]);
+            min[1] = std::max(min[1], sub.cubes[1]);
+            min[2] = std::max(min[2], sub.cubes[2]);
+        }
+        score += min[0] * min[1] * min[2];
     }
     return std::to_string(score);
 }
