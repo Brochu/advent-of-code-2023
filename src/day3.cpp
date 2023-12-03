@@ -11,6 +11,7 @@ typedef long long int64;
 typedef char* Gear;
 
 struct Label {
+    size_t id;
     char *pos;
     int value;
     size_t size;
@@ -26,7 +27,6 @@ bool is_included(const std::string &map, const Label &label) {
         int64 y = (p - map.c_str()) / WIDTH;
 
         int deltas[3] { -1, 0, 1 };
-
         for (int dx : deltas) {
             for (int dy : deltas) {
                 if (dx == 0 && dy == 0) continue;
@@ -39,7 +39,7 @@ bool is_included(const std::string &map, const Label &label) {
                 }
             }
         }
-    }
+}
 
     return false;
 }
@@ -53,11 +53,55 @@ std::string part1(const std::string &map, std::span<Label> labels) {
     return std::to_string(total);
 }
 
-std::string part2() {
-    return "NotCompleted";
+std::vector<size_t> validate_gear(const std::string &map, std::span<Label> labels, Gear gear) {
+    std::vector<size_t> adjIds;
+
+    int64 x = (gear - map.c_str()) % WIDTH;
+    int64 y = (gear - map.c_str()) / WIDTH;
+
+    int deltas[3] { -1, 0, 1 };
+    for (int dx : deltas) {
+        for (int dy : deltas) {
+            if (dx == 0 && dy == 0) continue;
+
+            int64 offset = (x + dx) + ((y + dy) * WIDTH);
+            if (offset < 0 || offset >= map.size()) continue;
+
+            for (const Label &label : labels) {
+                size_t lpos = label.pos - map.c_str();
+
+                if (offset >= lpos && offset < lpos + label.size &&
+                    std::find(adjIds.cbegin(), adjIds.cend(), label.id) == std::end(adjIds)) {
+
+                    adjIds.push_back(label.id);
+                }
+            }
+        }
+    }
+
+    return adjIds;
+}
+
+std::string part2(const std::string &map, std::span<Label> labels, std::span<Gear> gears) {
+    int64 total = 0;
+
+    for (Gear gear : gears) {
+        std::vector<size_t> ids = validate_gear(map, labels, gear);
+        if (ids.size() != 2) continue;
+
+        int64 ratio = 1;
+        for (const Label &label : labels) {
+            if (std::find(ids.cbegin(), ids.cend(), label.id) != std::end(ids)) {
+                ratio *= label.value;
+            }
+        }
+        total += ratio;
+    }
+    return std::to_string(total);
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
+    //std::string in = INCLUDE_STR(".\\inputs\\day3.txt");
     std::string in = INCLUDE_STR(".\\inputs\\day3_demo1.txt");
     std::string map {};
     Parse::enum_str(std::move(in), "\n", [&map](char *token) {
@@ -70,7 +114,7 @@ int run(std::string *part1_out, std::string *part2_out) {
     for (int i = 0; i < map.size(); i++) {
         if (is_digit(map[i])) {
             Label current { 0 };
-
+            current.id = i;
             current.pos = &map[i];
             sscanf_s(&map[i], "%i", &current.value);
 
@@ -86,7 +130,7 @@ int run(std::string *part1_out, std::string *part2_out) {
     }
 
     *part1_out = part1(map, labels);
-    *part2_out = part2();
+    *part2_out = part2(map, labels, gears);
 
     return 0;
 }
