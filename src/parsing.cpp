@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <fstream>
+#include <string.h>
 
 namespace Parse {
 
@@ -26,14 +27,19 @@ std::vector<char*> split_str(std::string &&str, const std::string &separator) {
 
 std::vector<char*> split_char(char *str, const std::string &separator) {
     std::vector<char*> tokens;
-    char *token, *nextt = nullptr;
+    char *found = str;
 
-    token = strtok_s(str, separator.c_str(), &nextt);
-    while(token) {
-        tokens.push_back(token);
-        token = strtok_s(NULL, separator.c_str(), &nextt);
+    while((found = strstr(str, separator.c_str()))) {
+
+        tokens.push_back(str);
+        str = found;
+        for (int i = 0; i < separator.size(); i++) {
+            found[i] = '\0';
+            str++;
+        }
     }
 
+    tokens.push_back(str);
     return tokens;
 }
 
