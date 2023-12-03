@@ -72,16 +72,14 @@ int run(std::string *part1_out, std::string *part2_out) {
 
     Parse::enum_str(std::move(in), "\n", [&games](char *token) {
         token = (strstr(token, ": ") + 2);
-        std::vector<char*> subsets = Parse::split_char(token, ";");
+        std::vector<char*> subsets = Parse::split_char(token, "; ");
+
         std::vector<Subset> subs;
         for (char *s : subsets) {
-            if (*s == ' ') { s++; };
+            std::vector<char*> cubes = Parse::split_char(s, ", ");
 
-            std::vector<char*> cubes = Parse::split_char(s, ",");
             int vals[3] = { 0 };
             for (char *c : cubes) {
-                if (*c == ' ') { c++; };
-
                 int num = 0; char color;
                 sscanf_s(c, "%i %c", &num, &color, 1);
                 vals[color % 3] = num;
