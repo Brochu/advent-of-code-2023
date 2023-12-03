@@ -29,13 +29,6 @@ void debug(std::span<Game> games) {
     }
 }
 
-size_t get_color_idx(const char *color) {
-    if (strcmp(color, "red") == 0) { return 0; }
-    else if (strcmp(color, "green") == 0) { return 1; }
-    else if (strcmp(color, "blue") == 0) { return 2; }
-    else { return INTMAX_MAX; }
-}
-
 bool is_possible(int max[3], const Game &game) {
     for (const Subset &sub : game.subsets) {
         if (sub.cubes[0] > max[0]) { return false; }
@@ -80,23 +73,19 @@ int run(std::string *part1_out, std::string *part2_out) {
     Parse::enum_str(std::move(in), "\n", [&games](char *token) {
         token = (strstr(token, ": ") + 2);
         std::vector<char*> subsets = Parse::split_char(token, ";");
-
         std::vector<Subset> subs;
         for (char *s : subsets) {
             if (*s == ' ') { s++; };
 
             std::vector<char*> cubes = Parse::split_char(s, ",");
-
             int vals[3] = { 0 };
             for (char *c : cubes) {
                 if (*c == ' ') { c++; };
 
-                const char *color = strstr(c, " ") + 1;
-                size_t idx = get_color_idx(color);
-                int num = std::stoi(std::string(c).substr(0, color - c).c_str());
-                vals[idx] = num;
+                int num = 0; char color;
+                sscanf_s(c, "%i %c", &num, &color, 1);
+                vals[color % 3] = num;
             }
-
             subs.emplace_back(vals[0], vals[1], vals[2]);
         }
         games.push_back({ games.size() + 1, subs });
