@@ -38,7 +38,7 @@ bool is_included(const std::string &map, const Label &label) {
                 }
             }
         }
-}
+    }
 
     return false;
 }
