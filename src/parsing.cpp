@@ -30,7 +30,6 @@ std::vector<char*> split_char(char *str, const std::string &separator) {
     char *found = str;
 
     while((found = strstr(str, separator.c_str()))) {
-
         tokens.push_back(str);
         str = found;
         for (int i = 0; i < separator.size(); i++) {
@@ -40,7 +39,9 @@ std::vector<char*> split_char(char *str, const std::string &separator) {
     }
 
     tokens.push_back(str);
-    return tokens;
+
+    auto end = std::remove_if(tokens.begin(), tokens.end(), [](char *val){ return strlen(val) == 0; });
+    return { tokens.begin(), end };
 }
 
 }
