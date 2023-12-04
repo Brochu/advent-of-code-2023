@@ -6,11 +6,14 @@
 namespace Solution {
 
 #define WIN_COUNT 5
+#define WIN_FORMAT "%i %i %i %i %i"
+#define WIN_EXPAND(addr) addr[0], addr[1], addr[2], addr[3], addr[4]
 #define PICK_COUNT 8
+#define PICK_FORMAT "%i %i %i %i %i %i %i %i"
+#define PICK_EXPAND(addr) addr[0], addr[1], addr[2], addr[3], addr[4], addr[5], addr[6], addr[7]
 
 struct Card {
     int id;
-
     int winNums[WIN_COUNT];
     int pickNums[PICK_COUNT];
 };
@@ -30,10 +33,8 @@ Card parse_card(char *line) {
     //printf("[CARD] with id = %i\n", card.id);
 
     std::vector<char*> nums = Parse::split_char(strstr(line, ": ") + 2, " | ");
-    sscanf_s(nums[0], "%i %i %i %i %i",
-             &card.winNums[0], &card.winNums[1], &card.winNums[2], &card.winNums[3], &card.winNums[4]);
-    sscanf_s(nums[1], "%i %i %i %i %i %i %i %i",
-             &card.pickNums[0], &card.pickNums[1], &card.pickNums[2], &card.pickNums[3], &card.pickNums[4], &card.pickNums[5], &card.pickNums[6], &card.pickNums[7]);
+    sscanf_s(nums[0], WIN_FORMAT, WIN_EXPAND(&card.winNums));
+    sscanf_s(nums[1], PICK_FORMAT, PICK_EXPAND(&card.pickNums));
 
     //for (int win : card.winNums) {
     //    printf("[W] '%i'\n", win);
