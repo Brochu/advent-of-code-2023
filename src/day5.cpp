@@ -1,18 +1,22 @@
 #include "day.h"
 #include "parsing.h"
 
+#include <algorithm>
 #include <span>
 
 namespace Solution {
 
-#define DEMO_FILE ".\\inputs\\day5_demo1.txt"
-#define DEMO_SEED_COUNT 4
-#define PUZZLE_FILE ".\\inputs\\day5.txt"
-#define PUZZLE_SEED_COUNT 20
+#define FILE_PATH ".\\inputs\\day5_demo1.txt"
+#define SEED_COUNT 4
+//#define FILE_PATH ".\\inputs\\day5.txt"
+//#define SEED_COUNT 20
 
-#define FILE_PATH DEMO_FILE
-#define SEED_COUNT DEMO_SEED_COUNT
 #define FILTERS_COUNT 7
+
+struct SeedRange {
+    u64 start;
+    usize size;
+};
 
 struct MapRange {
     u64 dest;
@@ -36,17 +40,51 @@ u64 apply_filter(FilterStep &filter, u64 value) {
 }
 
 std::string part1(std::span<u64> seeds, std::span<FilterStep> filters) {
-    for (u64 seed : seeds) {
-        FilterStep &step = filters[0];
+    u64 min_loc = LONG_MAX;
 
-        u64 newSeed = apply_filter(step, seed);
-        printf("%lld -> %lld\n", seed, newSeed);
+    for (u64 seed : seeds) {
+        u64 current = seed;
+        for (FilterStep filter : filters) {
+            u64 newSeed = apply_filter(filter, current);
+            current = newSeed;
+        }
+
+        if (current < min_loc) {
+            min_loc = current;
+        }
     }
-    return "NotCompleted";
+    return std::to_string(min_loc);
 }
 
-std::string part2(std::span<u64> seeds, std::span<FilterStep> filters) {
-    return "NotCompleted";
+std::string part2(std::span<SeedRange> seeds, std::span<FilterStep> filters) {
+    printf("[PART2]\n");
+    for (SeedRange &range : seeds) {
+        printf("[RANGE] %lld [%lld]\n", range.start, range.size);
+    }
+    printf("\n");
+    return "Incomplete";
+}
+
+std::vector<u64> parse_seeds_p1(std::span<char*> seed_nums) {
+    std::vector<u64> seeds;
+
+    for (int i = 0; i < SEED_COUNT; i++) {
+        seeds.push_back(std::stoull(seed_nums[i]));
+    }
+
+    return seeds;
+}
+
+std::vector<SeedRange> parse_seeds_p2(std::span<char*> seed_nums) {
+    std::vector<SeedRange> seeds;
+    for (int i = 0; i < seed_nums.size(); i += 2) {
+        seeds.push_back({ std::stoull(seed_nums[i]), std::stoull(seed_nums[i + 1]) });
+    }
+
+    std::sort(seeds.begin(), seeds.end(), [](SeedRange &left, SeedRange &right){
+        return left.start < right.start;
+    });
+    return seeds;
 }
 
 void parse_filter(FilterStep &filter, char *filterString) {
@@ -58,25 +96,27 @@ void parse_filter(FilterStep &filter, char *filterString) {
 
         filter.ranges.push_back(map);
     }
+
+    std::sort(filter.ranges.begin(), filter.ranges.end(), [](MapRange &left, MapRange &right){
+        return left.src < right.src;
+    });
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
     std::string in = INCLUDE_STR(FILE_PATH);
     std::vector<char*> sections = Parse::split_str(std::move(in), "\n\n");
 
-    u64 seeds[SEED_COUNT];
-    std::vector<char*> seed_nums = Parse::split_char(Parse::split_char(sections[0], ": ")[1], " ");
-    for (int i = 0; i < SEED_COUNT; i++) {
-        seeds[i] = std::stoull(seed_nums[i]);
-    }
-
     FilterStep filters[FILTERS_COUNT];
     for (int i = 1; i < sections.size(); i++) {
         parse_filter(filters[i-1], sections[i]);
     }
 
-    *part1_out = part1(seeds, filters);
-    *part2_out = part2(seeds, filters);
+    std::vector<char*> seed_nums = Parse::split_char(Parse::split_char(sections[0], ": ")[1], " ");
+    std::vector<u64> p1_seeds = parse_seeds_p1(seed_nums);
+    std::vector<SeedRange> p2_seeds = parse_seeds_p2(seed_nums);
+
+    *part1_out = part1(p1_seeds, filters);
+    *part2_out = part2(p2_seeds, filters);
 
     return 0;
 }
