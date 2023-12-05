@@ -19,17 +19,29 @@ struct MapRange {
     u64 src;
     usize size;
 };
+u64 map(MapRange &range, u64 value) {
+    return range.dest + (value - range.src);
+}
+
 struct FilterStep {
     std::vector<MapRange> ranges;
 };
+u64 apply_filter(FilterStep &filter, u64 value) {
+    for (MapRange range : filter.ranges) {
+        if (value >= range.src && value < range.src + range.size) {
+            return map(range, value);
+        }
+    }
+    return value;
+}
 
 std::string part1(std::span<u64> seeds, std::span<FilterStep> filters) {
-    printf("Seed values -> ");
     for (u64 seed : seeds) {
-        printf("%lld ", seed);
-    }
-    printf("\n");
+        FilterStep &step = filters[0];
 
+        u64 newSeed = apply_filter(step, seed);
+        printf("%lld -> %lld\n", seed, newSeed);
+    }
     return "NotCompleted";
 }
 
@@ -43,6 +55,8 @@ void parse_filter(FilterStep &filter, char *filterString) {
     for (char *range : rangesEntries) {
         MapRange map { 0 };
         sscanf_s(range, "%lld %lld %lld", &map.dest, &map.src, &map.size);
+
+        filter.ranges.push_back(map);
     }
 }
 
