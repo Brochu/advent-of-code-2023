@@ -3,6 +3,9 @@
 
 namespace Solution {
 
+#define FILE_PATH ".\\inputs\\day0_demo1.txt"
+//#define FILE_PATH ".\\inputs\\day0.txt"
+
 std::string part1() {
     return "NotCompleted";
 }
@@ -12,7 +15,8 @@ std::string part2() {
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
-    std::string in = INCLUDE_STR(".\\inputs\\day0.txt");
+    std::string in = INCLUDE_STR(FILE_PATH);
+    printf("%s", in.c_str());
 
     *part1_out = part1();
     *part2_out = part2();
