@@ -56,27 +56,30 @@ std::string part1(std::span<u64> seeds, std::span<FilterStep> filters) {
     return std::to_string(min_loc);
 }
 
-bool in_range(SeedRange sr, MapRange mr) {
-    printf("[INCHECK] sr: {%lld, %lld}, mr: {%lld, %lld}\n", sr.start, sr.size, mr.src, mr.size);
-    return sr.start >= mr.src && (sr.start + sr.size) < (mr.src + mr.size);
+SeedRange apply_filter_range(SeedRange &sr, FilterStep &filter, std::vector<SeedRange> &stack) {
+    //TODO: Find first complete or partial match
+    // return SeedRange to consider done
+    // For ranges that still need to be considered, push onto stack
+    return {};
 }
 
 std::string part2(std::span<SeedRange> seeds, std::span<FilterStep> filters) {
-    auto pred = [](SeedRange &left, SeedRange &right){ return left.start > right.start; };
-    std::vector<SeedRange> heap;
-
+    std::vector<SeedRange> stack;
     for (SeedRange &sr : seeds) {
-        printf("%lld, %lld\n", sr.start, sr.size);
-        heap.push_back(sr);
-        std::push_heap(heap.begin(), heap.end(), pred);
+        stack.push_back(sr);
     }
 
-    while (heap.size() > 0) {
-        std::pop_heap(heap.begin(), heap.end(), pred);
-        SeedRange &sr = heap.back();
-        heap.pop_back();
+    FilterStep &filter = filters[0]; {
+    //for (FilterStep &filter : filters) {
+        std::vector<SeedRange> done;
+        while (stack.size() > 0) {
+            SeedRange &sr = stack.back();
+            stack.pop_back();
 
-        printf("%lld, %lld\n", sr.start, sr.size);
+            done.push_back(apply_filter_range(sr, filter, stack));
+        }
+
+        //TODO: Something with done, probably use it as next stack for next filter?
     }
     return "Incomplete";
 }
