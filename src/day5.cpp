@@ -6,10 +6,10 @@
 
 namespace Solution {
 
-#define FILE_PATH ".\\inputs\\day5_demo1.txt"
-#define SEED_COUNT 4
-//#define FILE_PATH ".\\inputs\\day5.txt"
-//#define SEED_COUNT 20
+//#define FILE_PATH ".\\inputs\\day5_demo1.txt"
+//#define SEED_COUNT 4
+#define FILE_PATH ".\\inputs\\day5.txt"
+#define SEED_COUNT 20
 
 #define FILTERS_COUNT 7
 
@@ -56,11 +56,48 @@ std::string part1(std::span<u64> seeds, std::span<FilterStep> filters) {
     return std::to_string(min_loc);
 }
 
+bool is_full_overlap(const SeedRange &sr, const MapRange &mr) {
+    return sr.start >= mr.src && (sr.start + sr.size) < (mr.src + mr.size);
+}
+
+bool is_right_overlap(const SeedRange &sr, const MapRange &mr) {
+    return (sr.start + sr.size) > mr.src && (sr.start + sr.size) < (mr.src + mr.size);
+}
+
+bool is_left_overlap(const SeedRange &sr, const MapRange &mr) {
+    return sr.start >= mr.src && sr.start < (mr.src + mr.size);
+}
+
 SeedRange apply_filter_range(SeedRange &sr, FilterStep &filter, std::vector<SeedRange> &stack) {
-    //TODO: Find first complete or partial match
-    // return SeedRange to consider done
-    // For ranges that still need to be considered, push onto stack
-    return {};
+    for (const MapRange &mr : filter.ranges) {
+        printf("sr: (%lld, %lld); mr: (%lld, %lld)\n", sr.start, sr.size, mr.src, mr.size);
+        if (is_full_overlap(sr, mr)) {
+            SeedRange done = { apply_filter(filter, sr.start), sr.size };
+            printf("FULL\ndone = (%lld, %lld)\n", done.start, done.size);
+            return done;
+        }
+        else if (is_right_overlap(sr, mr)) {
+            SeedRange done = { apply_filter(filter, mr.src), (sr.start + sr.size) - mr.src };
+            SeedRange other = { sr.start, mr.src - sr.start };
+            printf("RIGHT\ndone = (%lld, %lld); stack = (%lld, %lld)\n",
+                   done.start, done.size,
+                   other.start, other.size);
+            stack.push_back(other);
+            return done;
+        }
+        else if (is_left_overlap(sr, mr)) {
+            SeedRange done = { apply_filter(filter, sr.start), (mr.src + mr.size) - sr.start };
+            SeedRange other = { (mr.src + mr.size), (sr.start + sr.size) - (mr.src + mr.size) };
+            printf("LEFT\ndone = (%lld, %lld); stack = (%lld, %lld)\n",
+                   done.start, done.size,
+                   other.start, other.size);
+            stack.push_back(other);
+            return done;
+        }
+    }
+
+    printf("NONE\n");
+    return { apply_filter(filter, sr.start), sr.size };
 }
 
 std::string part2(std::span<SeedRange> seeds, std::span<FilterStep> filters) {
@@ -69,19 +106,31 @@ std::string part2(std::span<SeedRange> seeds, std::span<FilterStep> filters) {
         stack.push_back(sr);
     }
 
-    FilterStep &filter = filters[0]; {
-    //for (FilterStep &filter : filters) {
+    //FilterStep &filter = filters[0]; {
+    for (FilterStep &filter : filters) {
         std::vector<SeedRange> done;
         while (stack.size() > 0) {
             SeedRange &sr = stack.back();
             stack.pop_back();
 
             done.push_back(apply_filter_range(sr, filter, stack));
+            printf("stack count = %lld; done count = %lld\n", stack.size(), done.size());
         }
 
         //TODO: Something with done, probably use it as next stack for next filter?
+        stack = done;
+        done.clear();
+        printf("-------------------\n");
     }
-    return "Incomplete";
+
+    u64 minVal = INT64_MAX;
+    for (SeedRange &sr : stack) {
+        printf("[SEED] (%lld, %lld)\n", sr.start, sr.size);
+        if (sr.start < minVal) {
+            minVal = sr.start;
+        }
+    }
+    return std::to_string(minVal);
 }
 
 std::vector<u64> parse_seeds_p1(std::span<char*> seed_nums) {
