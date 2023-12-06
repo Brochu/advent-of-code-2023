@@ -56,12 +56,28 @@ std::string part1(std::span<u64> seeds, std::span<FilterStep> filters) {
     return std::to_string(min_loc);
 }
 
+bool in_range(SeedRange sr, MapRange mr) {
+    printf("[INCHECK] sr: {%lld, %lld}, mr: {%lld, %lld}\n", sr.start, sr.size, mr.src, mr.size);
+    return sr.start >= mr.src && (sr.start + sr.size) < (mr.src + mr.size);
+}
+
 std::string part2(std::span<SeedRange> seeds, std::span<FilterStep> filters) {
-    printf("[PART2]\n");
-    for (SeedRange &range : seeds) {
-        printf("[RANGE] %lld [%lld]\n", range.start, range.size);
+    auto pred = [](SeedRange &left, SeedRange &right){ return left.start > right.start; };
+    std::vector<SeedRange> heap;
+
+    for (SeedRange &sr : seeds) {
+        printf("%lld, %lld\n", sr.start, sr.size);
+        heap.push_back(sr);
+        std::push_heap(heap.begin(), heap.end(), pred);
     }
-    printf("\n");
+
+    while (heap.size() > 0) {
+        std::pop_heap(heap.begin(), heap.end(), pred);
+        SeedRange &sr = heap.back();
+        heap.pop_back();
+
+        printf("%lld, %lld\n", sr.start, sr.size);
+    }
     return "Incomplete";
 }
 
@@ -80,10 +96,6 @@ std::vector<SeedRange> parse_seeds_p2(std::span<char*> seed_nums) {
     for (int i = 0; i < seed_nums.size(); i += 2) {
         seeds.push_back({ std::stoull(seed_nums[i]), std::stoull(seed_nums[i + 1]) });
     }
-
-    std::sort(seeds.begin(), seeds.end(), [](SeedRange &left, SeedRange &right){
-        return left.start < right.start;
-    });
     return seeds;
 }
 
