@@ -7,7 +7,7 @@
 namespace Solution {
 
 #define DEMO 1
-#if DEMO == 0 // ------------------------------------
+#if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day7_demo1.txt"
 #else // ------------------------------------
 #define FILE_PATH ".\\inputs\\day7.txt"
