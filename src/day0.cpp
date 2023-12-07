@@ -1,6 +1,8 @@
 #include "day.h"
 #include "parsing.h"
 
+#include <span>
+
 namespace Solution {
 
 #define DEMO 0
@@ -20,7 +22,7 @@ std::string part2() {
 
 int run(std::string *part1_out, std::string *part2_out) {
     std::string in = INCLUDE_STR(FILE_PATH);
-    printf("%s", in.c_str());
+    printf("%s\n", in.c_str());
 
     *part1_out = part1();
     *part2_out = part2();
