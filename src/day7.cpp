@@ -6,7 +6,7 @@
 
 namespace Solution {
 
-#define DEMO 1
+#define DEMO 0
 #if DEMO == 0 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day7_demo1.txt"
 #else // ------------------------------------
@@ -31,14 +31,7 @@ void debug_hands(std::span<Hand> hands) {
 }
 
 int card_value(char card) {
-    if (card == '2') return 2;
-    else if (card == '3') return 3;
-    else if (card == '4') return 4;
-    else if (card == '5') return 5;
-    else if (card == '6') return 6;
-    else if (card == '7') return 7;
-    else if (card == '8') return 8;
-    else if (card == '9') return 9;
+    if (card >= '0' && card <= '9') return card - '0';
     else if (card == 'T') return 10;
     else if (card == 'J') return 11;
     else if (card == 'Q') return 12;
