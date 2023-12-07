@@ -32,22 +32,22 @@ std::string part1(std::span<Race> races) {
     u64 margin = 1;
 
     for (Race &r : races) {
-        u64 count = 0;
-        u64 prev = 0;
-        for (u64 i = 1; i < r.time; i++) {
-            //TODO: Optim, search bounds
-            u64 val = i * (r.time - i);
-            if (val > r.dist) { count++; }
+        u64 start = 1;
+        u64 val = start * (r.time - start);
 
-            if (val < prev && val <= r.dist) {
-                break;
-            }
-            prev = val;
-            //debug_race({&r ,1});
-            //printf("start %i, speed = %i, remain = %i, max = %i\n", i, i, (r.time - i), val);
+        while (val <= r.dist) {
+            start++;
+            val = start * (r.time - start);
         }
-        margin *= count;
-        //printf("count = %i, margin = %i\n--------------\n", count, margin);
+
+        u64 end = r.time;
+        val = end * (r.time - end);
+        while (val <= r.dist) {
+            end--;
+            val = end * (r.time - end);
+        }
+
+        margin *= (end - start) + 1;
     }
 
     return std::to_string(margin);
