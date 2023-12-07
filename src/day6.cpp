@@ -5,7 +5,7 @@
 
 namespace Solution {
 
-#define DEMO 1
+#define DEMO 0
 #if DEMO == 1
 #define FILE_PATH ".\\inputs\\day6_demo1.txt"
 #define RACE_COUNT 3
@@ -54,12 +54,17 @@ std::string part1(std::span<Race> races) {
 }
 
 std::string part2(Race race) {
-    debug_race({&race,1});
-    return "NotCompleted";
+    return part1({&race,1});
 }
 
 Race combine_races(std::span<Race> races) {
-    return { 0, 0 };
+    std::string timeStr = "";
+    std::string distStr = "";
+    for (Race &r : races) {
+        timeStr.append(std::to_string(r.time));
+        distStr.append(std::to_string(r.dist));
+    }
+    return { std::stoull(timeStr), std::stoull(distStr) };
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
