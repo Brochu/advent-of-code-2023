@@ -3,8 +3,12 @@
 
 namespace Solution {
 
+#define DEMO 0
+#if DEMO == 0 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day0_demo1.txt"
-//#define FILE_PATH ".\\inputs\\day0.txt"
+#else // ------------------------------------
+#define FILE_PATH ".\\inputs\\day0.txt"
+#endif // ------------------------------------
 
 std::string part1() {
     return "NotCompleted";
