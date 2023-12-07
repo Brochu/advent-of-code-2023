@@ -75,7 +75,7 @@ std::string part2(std::vector<Hand> hands) {
     };
     std::sort(hands.begin(), hands.end(), pred);
 
-    //debug_hands(hands);
+    debug_hands(hands);
     u64 winnings = 0;
     for (int i = 0; i < hands.size(); i++) {
         winnings += hands[i].bet * (i + 1);
@@ -130,10 +130,20 @@ Type find_type_2(std::span<char> cards) {
     printf("jokers: %i\n", jokers);
 
     printf("Counts: ");
+    int bestVal = 0;
+    int bestIdx = 0;
     for (int i = card_value('2', is_p2); i <= card_value('A', is_p2); i++) {
+        int check = i + (counts[i] * 10);
+        if (bestVal < check) {
+            bestVal = check;
+            bestIdx = i;
+        }
         printf("%i ", counts[i]);
     }
     printf("\n");
+    printf("best idx = %i (%i)\n", bestIdx, bestVal);
+    printf("------------\n");
+    counts[bestIdx] += jokers;
 
     if (FIND(counts, 5)) { return Type::FiveOfAKind; }
     else if (FIND(counts, 4)) { return Type::FourOfAKind; }
