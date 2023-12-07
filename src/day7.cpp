@@ -6,7 +6,7 @@
 
 namespace Solution {
 
-#define DEMO 0
+#define DEMO 1
 #if DEMO == 0 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day7_demo1.txt"
 #else // ------------------------------------
@@ -30,26 +30,6 @@ void debug_hands(std::span<Hand> hands) {
     }
 }
 
-std::string part1(std::vector<Hand> hands) {
-    auto pred = [](const Hand &left, const Hand &right) {
-        if (left.type == right.type) {
-            int idx = 0;
-            while (left.cards[idx] == right.cards[idx]) { idx++; }
-            return left.cards[idx] > right.cards[idx];
-        }
-        return left.type < right.type;
-    };
-    std::sort(hands.begin(), hands.end(), pred);
-
-    debug_hands(hands);
-
-    return "NotCompleted";
-}
-
-std::string part2() {
-    return "NotCompleted";
-}
-
 int card_value(char card) {
     if (card == '2') return 2;
     else if (card == '3') return 3;
@@ -67,20 +47,35 @@ int card_value(char card) {
     else return -1;
 }
 
+std::string part1(std::vector<Hand> hands) {
+    auto pred = [](Hand &left, Hand &right) {
+        if (left.type == right.type) {
+            int idx = 0;
+            while (left.cards[idx] == right.cards[idx]) { idx++; }
+            return card_value(left.cards[idx]) < card_value(right.cards[idx]);
+        }
+        return left.type < right.type;
+    };
+    std::sort(hands.begin(), hands.end(), pred);
+
+    debug_hands(hands);
+    u64 winnings = 0;
+    for (int i = 0; i < hands.size(); i++) {
+        winnings += hands[i].bet * (i + 1);
+    }
+
+    return std::to_string(winnings);;
+}
+
+std::string part2() {
+    return "NotCompleted";
+}
+
 Type find_type(std::span<char> cards) {
     int counts[15] { 0 };
     for (char c : cards) {
         counts[card_value(c)]++;
     }
-
-    for (char c : cards) {
-        printf("%c ", c);
-    }
-    printf(" -> ");
-    for (int i = card_value('2'); i <= card_value('A'); i++) {
-        printf("%i ", counts[i]);
-    }
-    printf("\n");
 
     if (FIND(counts, 5)) {
         return Type::FiveOfAKind;
