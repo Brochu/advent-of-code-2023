@@ -5,7 +5,7 @@
 
 namespace Solution {
 
-#define DEMO 1
+#define DEMO 0
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day8_demo1.txt"
 #else // ------------------------------------
@@ -32,11 +32,30 @@ void debug_nodes(std::span<Node> nodes) {
     }
 }
 
-std::string part1() {
-    return "NotCompleted";
+std::string part1(std::span<Dir> instr, std::span<Node> nodes) {
+    debug_dirs(instr);
+
+    u32 numSteps = 0;
+    Node *current = nullptr;
+    for (Node &n : nodes) {
+        if (strcmp(n.name, "AAA") == 0) {
+            current = &n;
+            break;
+        }
+    }
+
+    while (strcmp(current->name, "ZZZ") != 0) {
+        debug_nodes({current, 1});
+        Dir pick = instr[numSteps % instr.size()];
+        u32 target = current->indices[pick];
+        current = &nodes[target];
+        numSteps++;
+    }
+
+    return std::to_string(numSteps);
 }
 
-std::string part2() {
+std::string part2(std::span<Dir> instr, std::span<Node> nodes) {
     return "NotCompleted";
 }
 
@@ -63,7 +82,7 @@ int run(std::string *part1_out, std::string *part2_out) {
         if (docs[0][i] == 'L') instr.push_back(Dir::Left);
         else if (docs[0][i] == 'R') instr.push_back(Dir::Right);
     }
-    debug_dirs(instr);
+    //debug_dirs(instr);
 
     std::vector<Node> nodes;
     std::vector<char*> nodesData = Parse::split_char(docs[1], "\n");
@@ -75,10 +94,10 @@ int run(std::string *part1_out, std::string *part2_out) {
         nodes.push_back({ elems[0], {conns[0], conns[1]} });
     }
     fetch_indices(nodes);
-    debug_nodes(nodes);
+    //debug_nodes(nodes);
 
-    *part1_out = part1();
-    *part2_out = part2();
+    *part1_out = part1(instr, nodes);
+    *part2_out = part2(instr, nodes);
 
     return 0;
 }
