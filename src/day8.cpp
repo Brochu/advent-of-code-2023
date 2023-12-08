@@ -7,7 +7,7 @@ namespace Solution {
 
 #define DEMO 0
 #if DEMO == 1 // ------------------------------------
-#define FILE_PATH ".\\inputs\\day8_demo1.txt"
+#define FILE_PATH ".\\inputs\\day8_demo2.txt"
 #else // ------------------------------------
 #define FILE_PATH ".\\inputs\\day8.txt"
 #endif // ------------------------------------
@@ -33,7 +33,7 @@ void debug_nodes(std::span<Node> nodes) {
 }
 
 std::string part1(std::span<Dir> instr, std::span<Node> nodes) {
-    debug_dirs(instr);
+    //debug_dirs(instr);
 
     u32 numSteps = 0;
     Node *current = nullptr;
@@ -44,19 +44,53 @@ std::string part1(std::span<Dir> instr, std::span<Node> nodes) {
         }
     }
 
-    while (strcmp(current->name, "ZZZ") != 0) {
-        debug_nodes({current, 1});
-        Dir pick = instr[numSteps % instr.size()];
-        u32 target = current->indices[pick];
-        current = &nodes[target];
-        numSteps++;
+    if (current != nullptr) {
+        while (strcmp(current->name, "ZZZ") != 0) {
+            //debug_nodes({current, 1});
+            Dir pick = instr[numSteps % instr.size()];
+            u32 target = current->indices[pick];
+            current = &nodes[target];
+            numSteps++;
+        }
     }
 
     return std::to_string(numSteps);
 }
 
+bool is_done(std::span<Node*> nodes) {
+    for (Node *n : nodes) {
+        if (n->name[2] != 'Z') {
+            return false;
+        }
+    }
+    return true;
+}
+
 std::string part2(std::span<Dir> instr, std::span<Node> nodes) {
-    return "NotCompleted";
+    //debug_dirs(instr);
+
+    //TODO: Fix this for perf, find repeating pattern length for each start nodes
+    // Then compare the different pattern lengths to find when they all sync at end nodes
+    u64 numSteps = 0;
+    std::vector<Node*> current;
+    for (Node &n : nodes) {
+        if (n.name[2] == 'A') { current.push_back(&n); }
+    }
+
+    while (!is_done(current)) {
+        for (int i = 0; i < current.size(); i++) {
+            //printf("start\n");
+            //debug_nodes({current[i], 1});
+            Dir pick = instr[numSteps % instr.size()];
+            u32 target = current[i]->indices[pick];
+            current[i] = &nodes[target];
+            //printf("end\n");
+            //debug_nodes({current[i], 1});
+        }
+        numSteps++;
+    }
+
+    return std::to_string(numSteps);
 }
 
 void fetch_indices(std::span<Node> nodes){
