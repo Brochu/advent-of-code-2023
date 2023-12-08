@@ -5,7 +5,7 @@
 
 namespace Solution {
 
-#define DEMO 0
+#define DEMO 1
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day8_demo2.txt"
 #else // ------------------------------------
@@ -93,16 +93,20 @@ std::string part2(std::span<Dir> instr, std::span<Node> nodes) {
     return std::to_string(numSteps);
 }
 
-void fetch_indices(std::span<Node> nodes){
-    //TODO: Is there a better way to do this?
-    for (Node &n : nodes) {
-        for(int i = 0; i < 2; i++) {
-            for(int j = 0; j < nodes.size(); j++) {
-                if (strcmp(nodes[j].name, n.conn[i]) == 0) {
-                    n.indices[i] = j;
-                    break;
-                }
-            }
+void fetch_indices(Node &n, std::span<Node> nodes, u32 &leftIdx, u32 &rightIdx){
+    // Find Left
+    for(int i = 0; i < nodes.size(); i++) {
+        if (strcmp(nodes[i].name, n.conn[0]) == 0) {
+            leftIdx = i;
+            break;
+        }
+    }
+
+    // Find Right
+    for(int i = 0; i < nodes.size(); i++) {
+        if (strcmp(nodes[i].name, n.conn[1]) == 0) {
+            rightIdx = i;
+            break;
         }
     }
 }
@@ -127,7 +131,14 @@ int run(std::string *part1_out, std::string *part2_out) {
         conns[1][3] = '\0';
         nodes.push_back({ elems[0], {conns[0], conns[1]} });
     }
-    fetch_indices(nodes);
+    for (Node &n : nodes) {
+        u32 lIdx = 0;
+        u32 rIdx = 0;
+        fetch_indices(n, nodes, lIdx, rIdx);
+
+        n.indices[0] = lIdx;
+        n.indices[1] = rIdx;
+    }
     //debug_nodes(nodes);
 
     *part1_out = part1(instr, nodes);
