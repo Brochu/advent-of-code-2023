@@ -5,7 +5,7 @@
 
 namespace Solution {
 
-#define DEMO 1
+#define DEMO 0
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day8_demo2.txt"
 #else // ------------------------------------
@@ -66,31 +66,47 @@ bool is_done(std::span<Node*> nodes) {
     return true;
 }
 
+// Function to return LCM of two numbers 
+u64 LCM(u64 a, u64 b) 
+{ 
+    u64 greater = std::max(a, b); 
+    u64 smallest = std::min(a, b); 
+    for (u64 i = greater; ; i += greater) { 
+        if (i % smallest  == 0) 
+            return i; 
+    } 
+} 
+
 std::string part2(std::span<Dir> instr, std::span<Node> nodes) {
     //debug_dirs(instr);
-
-    //TODO: Fix this for perf, find repeating pattern length for each start nodes
-    // Then compare the different pattern lengths to find when they all sync at end nodes
-    u64 numSteps = 0;
     std::vector<Node*> current;
     for (Node &n : nodes) {
-        if (n.name[2] == 'A') { current.push_back(&n); }
+        if (n.name[2] == 'A') {
+            current.push_back(&n);
+            //debug_nodes({&n, 1});
+        }
     }
+    std::vector<u64> numSteps;
+    numSteps.resize(current.size());
 
-    while (!is_done(current)) {
-        for (int i = 0; i < current.size(); i++) {
-            //printf("start\n");
-            //debug_nodes({current[i], 1});
-            Dir pick = instr[numSteps % instr.size()];
+    for (int i = 0; i < current.size(); i++) {
+        while (current[i]->name[2] != 'Z') {
+            //debug_nodes({current, 1});
+            Dir pick = instr[numSteps[i] % instr.size()];
             u32 target = current[i]->indices[pick];
             current[i] = &nodes[target];
-            //printf("end\n");
-            //debug_nodes({current[i], 1});
+            numSteps[i]++;
         }
-        numSteps++;
     }
 
-    return std::to_string(numSteps);
+    for (u64 num : numSteps) {
+        printf("%lld\n", num);
+    }
+    u64 res = numSteps[0];
+    for (int i = 1; i < numSteps.size(); i++) {
+        res = LCM(res, numSteps[i]);
+    }
+    return std::to_string(res);
 }
 
 void fetch_indices(Node &n, std::span<Node> nodes, u32 &leftIdx, u32 &rightIdx){
