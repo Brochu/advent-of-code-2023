@@ -6,7 +6,7 @@
 
 namespace Solution {
 
-#define DEMO 1
+#define DEMO 0
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day9_demo1.txt"
 #else // ------------------------------------
@@ -21,7 +21,7 @@ void debug_cochonnerie(std::span<Cochonnerie> cs) {
     for (Cochonnerie &c : cs) {
         printf("[NUMS]: ");
         for (i64 n : c.nums) {
-            printf("'%lld' ", n);
+            printf("%lld,", n);
         }
         printf("\n");
 
@@ -35,12 +35,35 @@ void debug_cochonnerie(std::span<Cochonnerie> cs) {
     }
 }
 
-std::string part1() {
-    return "NotCompleted";
+std::string part1(std::span<Cochonnerie> data) {
+    i64 total = 0;
+    for (Cochonnerie &c : data) {
+        i64 diff = 0;
+        for (int i = c.steps.size() - 2; i >= 0; i--) {
+            auto val = c.steps[i].back();
+            //printf("%lld : %lld\n", diff, val);
+            diff = val + diff;
+        }
+        total += diff + c.nums.back();
+        //printf("%lld\n", diff + c.nums.back());
+    }
+    return std::to_string(total);
 }
 
-std::string part2() {
-    return "NotCompleted";
+std::string part2(std::span<Cochonnerie> data) {
+    i64 total = 0;
+    for (Cochonnerie &c : data) {
+        i64 diff = 0;
+        for (int i = c.steps.size() - 2; i >= 0; i--) {
+            auto val = c.steps[i].front();
+            printf("%lld - %lld = %lld\n", val, diff, val - diff);
+            diff = val - diff;
+        }
+        i64 res = c.nums.front() - diff;
+        printf("res = %lld\n", res);
+        total += res;
+    }
+    return std::to_string(total);
 }
 
 bool is_end(std::vector<i64> *vals) {
@@ -80,10 +103,10 @@ int run(std::string *part1_out, std::string *part2_out) {
         populate_steps(c);
         data.push_back(c);
     }
-    debug_cochonnerie(data);
+    //debug_cochonnerie(data);
 
-    *part1_out = part1();
-    *part2_out = part2();
+    *part1_out = part1(data);
+    *part2_out = part2(data);
 
     return 0;
 }
