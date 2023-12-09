@@ -33,8 +33,6 @@ void debug_nodes(std::span<Node> nodes) {
 }
 
 std::string part1(std::span<Dir> instr, std::span<Node> nodes) {
-    //debug_dirs(instr);
-
     u32 numSteps = 0;
     Node *current = nullptr;
     for (Node &n : nodes) {
@@ -46,7 +44,6 @@ std::string part1(std::span<Dir> instr, std::span<Node> nodes) {
 
     if (current != nullptr) {
         while (strcmp(current->name, "ZZZ") != 0) {
-            //debug_nodes({current, 1});
             Dir pick = instr[numSteps % instr.size()];
             u32 target = current->indices[pick];
             current = &nodes[target];
@@ -55,15 +52,6 @@ std::string part1(std::span<Dir> instr, std::span<Node> nodes) {
     }
 
     return std::to_string(numSteps);
-}
-
-bool is_done(std::span<Node*> nodes) {
-    for (Node *n : nodes) {
-        if (n->name[2] != 'Z') {
-            return false;
-        }
-    }
-    return true;
 }
 
 // Function to return LCM of two numbers 
@@ -78,12 +66,10 @@ u64 LCM(u64 a, u64 b)
 } 
 
 std::string part2(std::span<Dir> instr, std::span<Node> nodes) {
-    //debug_dirs(instr);
     std::vector<Node*> current;
     for (Node &n : nodes) {
         if (n.name[2] == 'A') {
             current.push_back(&n);
-            //debug_nodes({&n, 1});
         }
     }
     std::vector<u64> numSteps;
@@ -91,7 +77,6 @@ std::string part2(std::span<Dir> instr, std::span<Node> nodes) {
 
     for (int i = 0; i < current.size(); i++) {
         while (current[i]->name[2] != 'Z') {
-            //debug_nodes({current, 1});
             Dir pick = instr[numSteps[i] % instr.size()];
             u32 target = current[i]->indices[pick];
             current[i] = &nodes[target];
@@ -99,9 +84,6 @@ std::string part2(std::span<Dir> instr, std::span<Node> nodes) {
         }
     }
 
-    for (u64 num : numSteps) {
-        printf("%lld\n", num);
-    }
     u64 res = numSteps[0];
     for (int i = 1; i < numSteps.size(); i++) {
         res = LCM(res, numSteps[i]);
@@ -136,7 +118,6 @@ int run(std::string *part1_out, std::string *part2_out) {
         if (docs[0][i] == 'L') instr.push_back(Dir::Left);
         else if (docs[0][i] == 'R') instr.push_back(Dir::Right);
     }
-    //debug_dirs(instr);
 
     std::vector<Node> nodes;
     std::vector<char*> nodesData = Parse::split_char(docs[1], "\n");
@@ -155,7 +136,6 @@ int run(std::string *part1_out, std::string *part2_out) {
         n.indices[0] = lIdx;
         n.indices[1] = rIdx;
     }
-    //debug_nodes(nodes);
 
     *part1_out = part1(instr, nodes);
     *part2_out = part2(instr, nodes);
