@@ -13,12 +13,12 @@ namespace Solution {
 #define FILE_PATH ".\\inputs\\day9.txt"
 #endif // ------------------------------------
 
-struct Cochonnerie {
+struct series {
     std::vector<i64> nums;
     std::vector<std::vector<i64>> steps;
 };
-void debug_cochonnerie(std::span<Cochonnerie> cs) {
-    for (Cochonnerie &c : cs) {
+void debug_series(std::span<series> cs) {
+    for (series &c : cs) {
         printf("[NUMS]: ");
         for (i64 n : c.nums) {
             printf("%lld,", n);
@@ -35,9 +35,9 @@ void debug_cochonnerie(std::span<Cochonnerie> cs) {
     }
 }
 
-std::string part1(std::span<Cochonnerie> data) {
+std::string part1(std::span<series> data) {
     i64 total = 0;
-    for (Cochonnerie &c : data) {
+    for (series &c : data) {
         i64 diff = 0;
         for (int i = c.steps.size() - 2; i >= 0; i--) {
             auto val = c.steps[i].back();
@@ -50,9 +50,9 @@ std::string part1(std::span<Cochonnerie> data) {
     return std::to_string(total);
 }
 
-std::string part2(std::span<Cochonnerie> data) {
+std::string part2(std::span<series> data) {
     i64 total = 0;
-    for (Cochonnerie &c : data) {
+    for (series &c : data) {
         i64 diff = 0;
         for (int i = c.steps.size() - 2; i >= 0; i--) {
             auto val = c.steps[i].front();
@@ -74,7 +74,7 @@ bool is_end(std::vector<i64> *vals) {
     return true;
 }
 
-void populate_steps(Cochonnerie &c) {
+void populate_steps(series &c) {
     std::vector<i64> *current = &c.nums;
 
     while (!is_end(current)) {
@@ -92,10 +92,10 @@ void populate_steps(Cochonnerie &c) {
 int run(std::string *part1_out, std::string *part2_out) {
     std::string in = INCLUDE_STR(FILE_PATH);
     std::vector<char*> values = Parse::split_str(std::move(in), "\n");
-    std::vector<Cochonnerie> data;
+    std::vector<series> data;
 
     for (char *line : values) { 
-        Cochonnerie c;
+        series c;
         std::vector<char*> changes = Parse::split_char(line, " ");
         for (char *change : changes) {
             c.nums.push_back(std::stoll(change));
@@ -103,7 +103,7 @@ int run(std::string *part1_out, std::string *part2_out) {
         populate_steps(c);
         data.push_back(c);
     }
-    //debug_cochonnerie(data);
+    //debug_series(data);
 
     *part1_out = part1(data);
     *part2_out = part2(data);
