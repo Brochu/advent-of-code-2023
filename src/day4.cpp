@@ -5,10 +5,17 @@
 
 namespace Solution {
 
-//#define WIN_COUNT 5
-//#define PICK_COUNT 8
+#define DEMO 0
+#if DEMO == 1 // ------------------------------------
+#define FILE_PATH ".\\inputs\\day4_demo1.txt"
+#define WIN_COUNT 5
+#define PICK_COUNT 8
+#else // ------------------------------------
+#define FILE_PATH ".\\inputs\\day4.txt"
 #define WIN_COUNT 10
 #define PICK_COUNT 25
+#endif // ------------------------------------
+
 
 struct Card {
     int id;
@@ -73,8 +80,7 @@ Card parse_card(char *line) {
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
-    //std::string in = INCLUDE_STR(".\\inputs\\day4_demo1.txt");
-    std::string in = INCLUDE_STR(".\\inputs\\day4.txt");
+    std::string in = INCLUDE_STR(FILE_PATH);
     std::vector<Card> cards;
 
     Parse::enum_str(std::move(in), "\n", [&cards](char *token) {

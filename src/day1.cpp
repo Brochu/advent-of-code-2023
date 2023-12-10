@@ -5,6 +5,13 @@
 
 namespace Solution {
 
+#define DEMO 0
+#if DEMO == 1 // ------------------------------------
+#define FILE_PATH ".\\inputs\\day1_demo1.txt"
+#else // ------------------------------------
+#define FILE_PATH ".\\inputs\\day1.txt"
+#endif // ------------------------------------
+
 int get_digit(const char *t) {
     std::string str(t);
     if (strcmp(str.substr(0, 3).c_str(), "one")   == 0) { return 1; }
@@ -69,7 +76,7 @@ std::string part2(std::span<char*> tokens) {
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
-    std::string input = INCLUDE_STR(".\\inputs\\day1.txt");
+    std::string input = INCLUDE_STR(FILE_PATH);
     std::vector<char*> tokens = Parse::split_str(std::move(input), "\n");
 
     *part1_out = part1(tokens);

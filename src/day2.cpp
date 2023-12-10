@@ -5,6 +5,13 @@
 
 namespace Solution {
 
+#define DEMO 0
+#if DEMO == 1 // ------------------------------------
+#define FILE_PATH ".\\inputs\\day2_demo1.txt"
+#else // ------------------------------------
+#define FILE_PATH ".\\inputs\\day2.txt"
+#endif // ------------------------------------
+
 struct Subset {
     int cubes[3];
 
@@ -67,7 +74,7 @@ std::string part2(std::span<Game> games) {
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
-    std::string in = INCLUDE_STR(".\\inputs\\day2.txt");
+    std::string in = INCLUDE_STR(FILE_PATH);
     std::vector<Game> games;
 
     Parse::enum_str(std::move(in), "\n", [&games](char *token) {

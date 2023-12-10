@@ -6,10 +6,15 @@
 
 namespace Solution {
 
-//#define FILE_PATH ".\\inputs\\day5_demo1.txt"
-//#define SEED_COUNT 4
+#define DEMO 0
+#if DEMO == 1 // ------------------------------------
+#define FILE_PATH ".\\inputs\\day5_demo1.txt"
+#define SEED_COUNT 4
+#else // ------------------------------------
 #define FILE_PATH ".\\inputs\\day5.txt"
 #define SEED_COUNT 20
+#endif // ------------------------------------
+
 
 #define FILTERS_COUNT 7
 

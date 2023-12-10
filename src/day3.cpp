@@ -5,7 +5,15 @@
 
 namespace Solution {
 
+#define DEMO 0
+#if DEMO == 1 // ------------------------------------
+#define FILE_PATH ".\\inputs\\day3_demo1.txt"
+#define WIDTH 10
+#else // ------------------------------------
+#define FILE_PATH ".\\inputs\\day3.txt"
 #define WIDTH 140
+#endif // ------------------------------------
+
 typedef long long int64;
 typedef char* Gear;
 
@@ -100,7 +108,7 @@ std::string part2(const std::string &map, std::span<Label> labels, std::span<Gea
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
-    std::string in = INCLUDE_STR(".\\inputs\\day3.txt");
+    std::string in = INCLUDE_STR(FILE_PATH);
     std::string map {};
     Parse::enum_str(std::move(in), "\n", [&map](char *token) {
         map.append(token);
