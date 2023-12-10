@@ -5,7 +5,7 @@
 
 namespace Solution {
 
-#define DEMO 0
+#define DEMO 1
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day10_demo1.txt"
 #define GRID_SIZE 5
@@ -19,6 +19,7 @@ enum Dir { N, W, E, S };
 struct Grid {
     char *cells;
     usize start;
+    std::vector<usize> loop;
 };
 void debug_grid(Grid &g) {
     printf("[GRID]\n");
@@ -27,6 +28,14 @@ void debug_grid(Grid &g) {
             printf("%c", g.cells[j + (GRID_SIZE * i)]);
         }
         printf("\n");
+    }
+    printf("\n");
+
+    printf("LOOP: ");
+    for (usize pos : g.loop) {
+        usize x = pos % GRID_SIZE;
+        usize y = pos / GRID_SIZE;
+        printf("(%lld, %lld); ", x, y);
     }
     printf("\n");
 }
@@ -47,6 +56,11 @@ void debug_paths(std::span<Path> paths) {
     }
 }
 void step_path(Path &p, Grid &g) {
+    usize offset = p.pos - g.cells;
+    if (std::find(g.loop.begin(), g.loop.end(), offset) == g.loop.end()) {
+        g.loop.push_back(offset);
+    }
+
     if (p.from == Dir::S) {
         if (*p.pos == '|') p.pos -= GRID_SIZE;
         else if (*p.pos == '7') {
@@ -123,10 +137,12 @@ std::string part1(Grid &g) {
         }
         //printf("--------\n");
     }
+    g.loop.push_back(paths[0].pos - g.cells);
     return std::to_string(paths[0].len);
 }
 
 std::string part2(Grid &g) {
+    debug_grid(g);
     return "NotCompleted";
 }
 
@@ -142,6 +158,7 @@ int run(std::string *part1_out, std::string *part2_out) {
         if (gridStr[i] == 'S') {
             g.cells = gridStr.data();
             g.start = i;
+            g.loop.push_back(i);
         }
     }
 
