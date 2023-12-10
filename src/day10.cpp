@@ -7,12 +7,15 @@ namespace Solution {
 
 #define DEMO 1
 #if DEMO == 1 // ------------------------------------
-#define FILE_PATH ".\\inputs\\day10_demo1.txt"
-#define GRID_SIZE 5
+#define FILE_PATH ".\\inputs\\day10_demo2.txt"
+#define GRID_WIDTH 20
+#define GRID_HEIGHT 10
 #else // ------------------------------------
 #define FILE_PATH ".\\inputs\\day10.txt"
-#define GRID_SIZE 140
+#define GRID_WIDTH 140
+#define GRID_HEIGHT 140
 #endif // ------------------------------------
+#define FOUND(l, i) (std::find(l.begin(), l.end(), i) != l.end())
 
 enum Dir { N, W, E, S };
 
@@ -23,9 +26,9 @@ struct Grid {
 };
 void debug_grid(Grid &g) {
     printf("[GRID]\n");
-    for (int i = 0; i < GRID_SIZE; i++) {
-        for (int j = 0; j < GRID_SIZE; j++) {
-            printf("%c", g.cells[j + (GRID_SIZE * i)]);
+    for (int i = 0; i < GRID_HEIGHT; i++) {
+        for (int j = 0; j < GRID_WIDTH; j++) {
+            printf("%c", g.cells[j + (GRID_WIDTH * i)]);
         }
         printf("\n");
     }
@@ -33,8 +36,8 @@ void debug_grid(Grid &g) {
 
     printf("LOOP: ");
     for (usize pos : g.loop) {
-        usize x = pos % GRID_SIZE;
-        usize y = pos / GRID_SIZE;
+        usize x = pos % GRID_WIDTH;
+        usize y = pos / GRID_WIDTH;
         printf("(%lld, %lld); ", x, y);
     }
     printf("\n");
@@ -57,12 +60,12 @@ void debug_paths(std::span<Path> paths) {
 }
 void step_path(Path &p, Grid &g) {
     usize offset = p.pos - g.cells;
-    if (std::find(g.loop.begin(), g.loop.end(), offset) == g.loop.end()) {
+    if (!FOUND(g.loop, offset)) {
         g.loop.push_back(offset);
     }
 
     if (p.from == Dir::S) {
-        if (*p.pos == '|') p.pos -= GRID_SIZE;
+        if (*p.pos == '|') p.pos -= GRID_WIDTH;
         else if (*p.pos == '7') {
             p.pos -= 1;
             p.from = Dir::E;
@@ -75,27 +78,27 @@ void step_path(Path &p, Grid &g) {
     else if (p.from == Dir::E) {
         if (*p.pos == '-') p.pos -= 1;
         else if (*p.pos == 'L') {
-            p.pos -= GRID_SIZE;
+            p.pos -= GRID_WIDTH;
             p.from = Dir::S;
         }
         else if (*p.pos == 'F') {
-            p.pos += GRID_SIZE;
+            p.pos += GRID_WIDTH;
             p.from = Dir::N;
         }
     }
     else if (p.from == Dir::W) {
         if (*p.pos == '-') p.pos += 1;
         else if (*p.pos == 'J') {
-            p.pos -= GRID_SIZE;
+            p.pos -= GRID_WIDTH;
             p.from = Dir::S;
         }
         else if (*p.pos == '7') {
-            p.pos += GRID_SIZE;
+            p.pos += GRID_WIDTH;
             p.from = Dir::N;
         }
     }
     else if (p.from == Dir::N) {
-        if (*p.pos == '|') p.pos += GRID_SIZE;
+        if (*p.pos == '|') p.pos += GRID_WIDTH;
         else if (*p.pos == 'J') {
             p.pos -= 1;
             p.from = Dir::E;
@@ -121,13 +124,13 @@ bool is_done(std::span<Path> paths, Grid &g) {
 std::string part1(Grid &g) {
     //debug_grid(g);
     std::vector<Path> paths;
-    char *up = &g.cells[g.start - GRID_SIZE];
+    char *up = &g.cells[g.start - GRID_WIDTH];
     if (*up == '|' || *up == '7' || *up == 'F') { paths.push_back({ &*up, Dir::S, 1 }); }
     char *lf = &g.cells[g.start - 1];
     if (*lf == '-' || *lf == 'L' || *lf == 'F') { paths.push_back({ &*lf, Dir::E, 1 }); }
     char *rt = &g.cells[g.start + 1];
     if (*rt == '-' || *rt == 'J' || *rt == '7') { paths.push_back({ &*rt, Dir::W, 1 }); }
-    char *dw = &g.cells[g.start + GRID_SIZE];
+    char *dw = &g.cells[g.start + GRID_WIDTH];
     if (*dw == '|' || *dw == 'J' || *dw == 'L') { paths.push_back({ &*dw, Dir::N, 1 }); }
 
     while (!is_done(paths, g)) {
@@ -143,7 +146,40 @@ std::string part1(Grid &g) {
 
 std::string part2(Grid &g) {
     debug_grid(g);
-    return "NotCompleted";
+
+    std::vector<usize> fill;
+    std::vector<usize> stack;
+    stack.insert(stack.begin(), 0);
+    while (!stack.empty()) {
+        usize current = stack.back();
+        stack.pop_back();
+
+        if (!FOUND(fill, current)) {
+            fill.push_back(current);
+        }
+        else {
+            continue;
+        }
+
+        if (current >= GRID_WIDTH && !FOUND(g.loop, current - GRID_WIDTH)) {
+            stack.insert(stack.begin(), current - GRID_WIDTH);
+        }
+        if ((current + GRID_WIDTH) < (GRID_WIDTH * GRID_HEIGHT) && !FOUND(g.loop, current + GRID_WIDTH)) {
+            stack.insert(stack.begin(), current + GRID_WIDTH);
+        }
+        if ((current % GRID_WIDTH > 0) && !FOUND(g.loop, current - 1)) {
+            stack.insert(stack.begin(), current - 1);
+        }
+        if ((current % GRID_WIDTH) < (GRID_WIDTH - 1) && !FOUND(g.loop, current + 1)) {
+            stack.insert(stack.begin(), current + 1);
+        }
+    }
+
+    for (usize off : g.loop) {
+        g.cells[off] = '*';
+    }
+    debug_grid(g);
+    return std::to_string((GRID_WIDTH* GRID_HEIGHT) - g.loop.size() - fill.size());
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
