@@ -5,7 +5,7 @@
 
 namespace Solution {
 
-#define DEMO 1
+#define DEMO 0
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day10_demo1.txt"
 #define GRID_SIZE 5
@@ -46,21 +46,84 @@ void debug_paths(std::span<Path> paths) {
         printf("[PATH] %c from %c [len=%lld]\n", *p.pos, d, p.len);
     }
 }
+void step_path(Path &p, Grid &g) {
+    if (p.from == Dir::S) {
+        if (*p.pos == '|') p.pos -= GRID_SIZE;
+        else if (*p.pos == '7') {
+            p.pos -= 1;
+            p.from = Dir::E;
+        }
+        else if (*p.pos == 'F') {
+            p.pos += 1;
+            p.from = Dir::W;
+        }
+    }
+    else if (p.from == Dir::E) {
+        if (*p.pos == '-') p.pos -= 1;
+        else if (*p.pos == 'L') {
+            p.pos -= GRID_SIZE;
+            p.from = Dir::S;
+        }
+        else if (*p.pos == 'F') {
+            p.pos += GRID_SIZE;
+            p.from = Dir::N;
+        }
+    }
+    else if (p.from == Dir::W) {
+        if (*p.pos == '-') p.pos += 1;
+        else if (*p.pos == 'J') {
+            p.pos -= GRID_SIZE;
+            p.from = Dir::S;
+        }
+        else if (*p.pos == '7') {
+            p.pos += GRID_SIZE;
+            p.from = Dir::N;
+        }
+    }
+    else if (p.from == Dir::N) {
+        if (*p.pos == '|') p.pos += GRID_SIZE;
+        else if (*p.pos == 'J') {
+            p.pos -= 1;
+            p.from = Dir::E;
+        }
+        else if (*p.pos == 'L') {
+            p.pos += 1;
+            p.from = Dir::W;
+        }
+    }
+
+    p.len++;
+}
+
+bool is_done(std::span<Path> paths, Grid &g) {
+    usize offset = paths[0].pos - g.cells;
+    for (Path &p : paths) {
+        usize current = p.pos - g.cells;
+        if (current != offset) return false;
+    }
+    return true;
+}
 
 std::string part1(Grid &g) {
-    debug_grid(g);
+    //debug_grid(g);
     std::vector<Path> paths;
-    char up = g.cells[g.start - GRID_SIZE];
-    if (up == '|' || up == '7' || up == 'F') { paths.push_back({ &up, Dir::S, 1 }); }
-    char lf = g.cells[g.start - 1];
-    if (lf == '-' || lf == 'L' || lf == 'F') { paths.push_back({ &lf, Dir::E, 1 }); }
-    char rt = g.cells[g.start + 1];
-    if (rt == '-' || rt == 'J' || rt == '7') { paths.push_back({ &rt, Dir::W, 1 }); }
-    char dw = g.cells[g.start + GRID_SIZE];
-    if (dw == '|' || dw == 'J' || dw == 'L') { paths.push_back({ &dw, Dir::N, 1 }); }
+    char *up = &g.cells[g.start - GRID_SIZE];
+    if (*up == '|' || *up == '7' || *up == 'F') { paths.push_back({ &*up, Dir::S, 1 }); }
+    char *lf = &g.cells[g.start - 1];
+    if (*lf == '-' || *lf == 'L' || *lf == 'F') { paths.push_back({ &*lf, Dir::E, 1 }); }
+    char *rt = &g.cells[g.start + 1];
+    if (*rt == '-' || *rt == 'J' || *rt == '7') { paths.push_back({ &*rt, Dir::W, 1 }); }
+    char *dw = &g.cells[g.start + GRID_SIZE];
+    if (*dw == '|' || *dw == 'J' || *dw == 'L') { paths.push_back({ &*dw, Dir::N, 1 }); }
 
-    debug_paths(paths);
-    return "NotCompleted";
+    while (!is_done(paths, g)) {
+        //debug_paths(paths);
+        for (Path &p : paths) {
+            step_path(p, g);
+        }
+        //printf("--------\n");
+    }
+    return std::to_string(paths[0].len);
 }
 
 std::string part2(Grid &g) {
