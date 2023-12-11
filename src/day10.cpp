@@ -5,9 +5,11 @@
 
 namespace Solution {
 
-#define DEMO 1
+#define DEMO 0
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day10_demo2.txt"
+//#define GRID_WIDTH 5
+//#define GRID_HEIGHT 5
 #define GRID_WIDTH 20
 #define GRID_HEIGHT 10
 #else // ------------------------------------
@@ -34,13 +36,13 @@ void debug_grid(Grid &g) {
     }
     printf("\n");
 
-    printf("LOOP: ");
-    for (usize pos : g.loop) {
-        usize x = pos % GRID_WIDTH;
-        usize y = pos / GRID_WIDTH;
-        printf("(%lld, %lld); ", x, y);
-    }
-    printf("\n");
+    //printf("LOOP: ");
+    //for (usize pos : g.loop) {
+    //    usize x = pos % GRID_WIDTH;
+    //    usize y = pos / GRID_WIDTH;
+    //    printf("(%lld, %lld); ", x, y);
+    //}
+    //printf("\n");
 }
 
 struct Path {
@@ -145,41 +147,32 @@ std::string part1(Grid &g) {
 }
 
 std::string part2(Grid &g) {
-    debug_grid(g);
+    for (int i = 0; i < strlen(g.cells); i++) {
+        if (!FOUND(g.loop, i)) {
+            g.cells[i] = '.';
+        }
+    }
+    //debug_grid(g);
 
-    std::vector<usize> fill;
-    std::vector<usize> stack;
-    stack.insert(stack.begin(), 0);
-    while (!stack.empty()) {
-        usize current = stack.back();
-        stack.pop_back();
+    usize count = 0;
+    for (int i = 0; i < GRID_HEIGHT; i++) {
+        bool isIn = false;
+        for (int j = 0; j < GRID_WIDTH; j++) {
+            usize offset = j + (i * GRID_WIDTH);
+            char c = g.cells[offset];
 
-        if (!FOUND(fill, current)) {
-            fill.push_back(current);
-        }
-        else {
-            continue;
-        }
-
-        if (current >= GRID_WIDTH && !FOUND(g.loop, current - GRID_WIDTH)) {
-            stack.insert(stack.begin(), current - GRID_WIDTH);
-        }
-        if ((current + GRID_WIDTH) < (GRID_WIDTH * GRID_HEIGHT) && !FOUND(g.loop, current + GRID_WIDTH)) {
-            stack.insert(stack.begin(), current + GRID_WIDTH);
-        }
-        if ((current % GRID_WIDTH > 0) && !FOUND(g.loop, current - 1)) {
-            stack.insert(stack.begin(), current - 1);
-        }
-        if ((current % GRID_WIDTH) < (GRID_WIDTH - 1) && !FOUND(g.loop, current + 1)) {
-            stack.insert(stack.begin(), current + 1);
+            if (c == '|' || c == '7' || c == 'F' || c == 'S') {
+                isIn = !isIn;
+            }
+            else if (c == '.' && isIn) {
+                count++;
+            }
+            
+            //printf("(%i, %i) [%lld] -> %c\n", i, j, offset, c);
         }
     }
 
-    for (usize off : g.loop) {
-        g.cells[off] = '*';
-    }
-    debug_grid(g);
-    return std::to_string((GRID_WIDTH* GRID_HEIGHT) - g.loop.size() - fill.size());
+    return std::to_string(count);
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
