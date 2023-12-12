@@ -2,7 +2,6 @@
 #include "parsing.h"
 
 #include <span>
-#include <string>
 
 namespace Solution {
 
@@ -13,7 +12,6 @@ namespace Solution {
 #define FILE_PATH ".\\inputs\\day12.txt"
 #endif // ------------------------------------
 
-// Row read from the input
 struct Row {
     char *status;
     std::vector<u8> groups;
@@ -29,15 +27,23 @@ void debug_rows(std::span<Row> rows) {
     }
 }
 
-// Row that is currently being iterated on in the BFS algo
 struct RowState {
+    Row *ref;
+    usize idx;
+    std::vector<char> swaps;
 };
 
 std::string part1(std::span<Row> rows) {
     Row &r = rows[0]; {
     // for (Row &r : rows)
+        debug_rows({ &r, 1 });
         std::vector<RowState> stack;
         while (!stack.empty()) {
+            RowState rs = stack.back();
+            stack.pop_back();
+
+            char transformed[strlen(rs.ref->status) + 1];
+            strcpy_s(transformed, strlen(rs.ref->status) + 1, rs.ref->status);
             // Get status with replacements
             // If no more ?'s, (NEED TO VALIDATE ANYWAY) row.num++
             // Else check next ?
