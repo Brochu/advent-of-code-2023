@@ -16,8 +16,10 @@ struct Row {
     char *status;
     std::vector<u8> groups;
     usize num = 0; // To be incremented when a new valid arrangement is found
+    // Cannot keep track of num here, need for it to be cached and kept with the stack
 };
 
+// Try with different state
 struct RowState {
     usize idx;
     usize len;
@@ -70,6 +72,11 @@ bool is_valid(Row &r, RowState &rs) {
     return false;
 }
 
+// Try different state added to stack
+// State needs to keep track of depths checked and results
+// Need to cache states
+//
+// Also try to re-implement with recursion?
 std::string part1(std::span<Row> rows) {
     for (i32 i = 0; i < rows.size(); i++) {
         Row &r = rows[i];
