@@ -35,10 +35,27 @@ void print_rows(std::span<Row> rows) {
 usize rec_solve_row(Row &r, char *str, usize igrp, Cache &cache) {
     printf("[REC, %lld] %s\n", (str - r.springs), str);
     if (cache[(str - r.springs)][igrp] > 0) { return cache[(str - r.springs)][igrp]; }
-    if (strlen(str) == 0) {
-        return 1;
+
+    usize result = 0;
+    auto dot = [&](){
+        return 0;
+    };
+    auto sharp = [&](){
+        return 0;
+    };
+
+    if (str[0] == '?') {
+        result = dot() + sharp();
     }
-    return rec_solve_row(r, ++str, igrp, cache);
+
+    if (strlen(str) == 0) {
+        result = 1;
+    } else {
+        result = rec_solve_row(r, ++str, igrp, cache);
+    }
+
+    cache[(str - r.springs)][igrp] = result;
+    return result;
 }
 usize solve_row(Row &r) {
     Cache cache;
