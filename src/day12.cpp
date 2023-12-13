@@ -12,99 +12,55 @@ namespace Solution {
 #define FILE_PATH ".\\inputs\\day12.txt"
 #endif // ------------------------------------
 
+typedef std::vector<std::vector<i64>> Cache;
+void print_cache(Cache &cache) {
+    for (auto &entry : cache) {
+        for (usize val : entry) { printf("%lld ", val); }
+        printf("\n");
+    }
+}
+
 struct Row {
-    char *status;
+    char *springs;
     std::vector<u8> groups;
-    usize num = 0; // To be incremented when a new valid arrangement is found
-    // Cannot keep track of num here, need for it to be cached and kept with the stack
 };
-
-// Try with different state
-struct RowState {
-    usize idx;
-    usize len;
-    char springs[64];
-};
-RowState new_state(Row & row) {
-    RowState state { 0, strlen(row.status) };
-    memcpy(state.springs, row.status, strlen(row.status));
-    state.springs[strlen(row.status)] = '\0';
-    return state;
-}
-RowState duplicate(RowState &rs, char spring) {
-    RowState newstate { rs.idx + 1, rs.len };
-    memcpy(newstate.springs, rs.springs, rs.len);
-    newstate.springs[rs.idx] = spring;
-    newstate.springs[rs.len] = '\0';
-    return newstate;
-}
-bool is_done(RowState &rs) {
-    usize questionNum = 0;
-    for (i32 j = 0; j < rs.len; j++) {
-        if (rs.springs[j] == '?') questionNum++;
+void print_rows(std::span<Row> rows) {
+    for (Row &r : rows) {
+        printf("[ROW] %s; ", r.springs);
+        for (u8 g : r.groups) { printf("%i ", g); }
+        printf("\n");
     }
-    return questionNum <= 0;
 }
 
-bool is_valid(Row &r, RowState &rs) {
-    //printf("[PERMUTATION]: %s\n", rs.springs);
-    std::vector<u8> validGroups;
-    u8 *current = nullptr;
-    for (i32 i = 0; i < rs.len; i++) {
-        if (rs.springs[i] == '#') {
-            if (current == nullptr) {
-                validGroups.push_back(0);
-                current = &validGroups[validGroups.size() - 1];
-            }
-            (*current)++;
-        }
-        else if (rs.springs[i] == '.' && current != nullptr) {
-            current = nullptr;
+usize rec_solve_row(Row &r, char *str, usize igrp, Cache &cache) {
+    printf("[REC, %lld] %s\n", (str - r.springs), str);
+    if (cache[(str - r.springs)][igrp] > 0) { return cache[(str - r.springs)][igrp]; }
+    if (strlen(str) == 0) {
+        return 1;
+    }
+    return rec_solve_row(r, ++str, igrp, cache);
+}
+usize solve_row(Row &r) {
+    Cache cache;
+    cache.resize(strlen(r.springs) + 1);
+    for (auto &entry : cache) {
+        entry.resize(r.groups.size() + 1);
+        for (i64 &value : entry) {
+            value = -1;
         }
     }
+    print_cache(cache);
 
-    if (r.groups.size() == validGroups.size()) {
-        for (i32 i = 0; i < validGroups.size(); i++) {
-            if (r.groups[i] != validGroups[i]) return false;
-        }
-        return true;
-    }
-    return false;
+    return rec_solve_row(r, r.springs, 0, cache);
 }
 
-// Try different state added to stack
-// State needs to keep track of depths checked and results
-// Need to cache states
-//
-// Also try to re-implement with recursion?
 std::string part1(std::span<Row> rows) {
-    for (i32 i = 0; i < rows.size(); i++) {
-        Row &r = rows[i];
-        //printf("[NEW ROW] idx = %i\n", i);
-        std::vector<RowState> stack;
-        stack.insert(std::begin(stack), new_state(r));
-
-        while (!stack.empty()) {
-            RowState rs = stack.back();
-            stack.pop_back();
-            if (is_done(rs)) {
-                if (is_valid(r, rs)) { r.num++; }
-                continue;
-            }
-
-            if (rs.springs[rs.idx] == '?') {
-                stack.insert(std::begin(stack), duplicate(rs, '.'));
-                stack.insert(std::begin(stack), duplicate(rs, '#'));
-            } else {
-                rs.idx++;
-                stack.push_back(rs);
-            }
-        }
-    }
+    //print_rows(rows);
 
     usize total = 0;
-    for (Row &r : rows) {
-        total += r.num;
+    Row &r = rows[0]; {
+    //for (Row &r : rows) {
+        total += solve_row(r);
     }
     return std::to_string(total);
 }
