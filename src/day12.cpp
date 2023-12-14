@@ -50,15 +50,26 @@ usize rec_solve_row(char *str, std::span<u8> groups, usize idx) {
 
     char c = str[0];
     u8 group = groups[idx];
+    auto dot = [&](){
+        return rec_solve_row(str + 1, groups, idx);
+    };
+    auto tag = [&](){
+        if (can_match(str, group)) {
+            return 0;
+        } else {
+            return 0;
+        }
+    };
+
     usize out = INT64_MAX;
     if (c == '.') {
-        out = rec_solve_row(str + 1, groups, idx);
+        out = dot();
     }
     else if (c == '#') {
-        out = rec_solve_row(str + 1, groups, idx);
+        out = tag();
     }
     else if (c == '?') {
-        out = rec_solve_row(str + 1, groups, idx);
+        out = tag() + dot();
     }
 
     printf("[REC-END] %s; %i -> %lld\n", str, groups[idx], out);
