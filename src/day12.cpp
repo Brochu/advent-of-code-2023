@@ -25,11 +25,24 @@ void print_rows(std::span<Row> rows) {
 }
 
 usize rec_solve_row(char *str, std::span<u8> groups, usize idx) {
-    printf("[REC] %s; %i\n", str, groups[idx]);
-    if (strlen(str) == 0) {
+    printf("[REC-START] %s; %i\n", str, groups[idx]);
+    if (idx >= groups.size()) {
+        for (i32 i = 0; i < strlen(str); i++) {
+            if (str[i] == '#') {
+                printf("[REC] No more groups, found # -> return 0\n");
+                return 0;
+            }
+        }
+        printf("[REC] No more groups, no more # -> return 1\n");
         return 1;
     }
-    return rec_solve_row(++str, groups, idx);
+    if (strlen(str) == 0) {
+        printf("[REC] Springs over, we know there are groups left -> return 0\n");
+        return 0;
+    }
+    usize out = rec_solve_row(str+1, groups, idx);
+    printf("[REC-END] %s; %i -> %lld\n", str, groups[idx], out);
+    return out;
 }
 usize solve_row(Row &r) {
     return rec_solve_row(r.springs, r.groups, 0);
