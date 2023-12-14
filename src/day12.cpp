@@ -47,7 +47,20 @@ usize rec_solve_row(char *str, std::span<u8> groups, usize idx) {
         printf("[REC] Springs over, we know there are groups left -> return 0\n");
         return 0;
     }
-    usize out = rec_solve_row(str+1, groups, idx);
+
+    char c = str[0];
+    u8 group = groups[idx];
+    usize out = INT64_MAX;
+    if (c == '.') {
+        out = rec_solve_row(str + 1, groups, idx);
+    }
+    else if (c == '#') {
+        out = rec_solve_row(str + 1, groups, idx);
+    }
+    else if (c == '?') {
+        out = rec_solve_row(str + 1, groups, idx);
+    }
+
     printf("[REC-END] %s; %i -> %lld\n", str, groups[idx], out);
     return out;
 }
