@@ -33,28 +33,62 @@ void print_rows(std::span<Row> rows) {
 }
 
 usize rec_solve_row(Row &r, char *str, usize igrp, Cache &cache) {
-    printf("[REC, %lld] %s\n", (str - r.springs), str);
-    if (cache[(str - r.springs)][igrp] > 0) { return cache[(str - r.springs)][igrp]; }
+    //if (cache[(str - r.springs)][igrp] > 0) { return cache[(str - r.springs)][igrp]; }
 
-    usize result = 0;
-    auto dot = [&](){
+    if (igrp >= r.groups.size()) {
+        for (i32 i = 0; i < strlen(str); i++) {
+            if (str[i] == '#') {
+                return 0;
+            }
+        }
+        return 1;
+    }
+
+    if (strlen(str) <= 0) {
         return 0;
+    }
+
+    auto dot = [&](){
+        return rec_solve_row(r, ++str, igrp, cache);
     };
     auto sharp = [&](){
-        return 0;
+        for (i32 i = 0; i < r.groups[igrp]; i++) {
+            if (str[i] == '.') {
+                return 0ull;
+            }
+        }
+
+        if (strlen(str) == r.groups[igrp]) {
+            if (r.groups.size() == 1) {
+                return 1ull;
+            } else {
+                return 0ull;
+            }
+        }
+
+        if (str[r.groups[igrp]] == '?' || str[r.groups[igrp]] == '.') {
+            return rec_solve_row(r, str += r.groups[igrp], igrp + 1, cache);
+        }
+        return 0ull;
     };
 
-    if (str[0] == '?') {
+    usize result = 0;
+    if (str[0] == '#') {
+        result = sharp();
+    }
+    else if (str[0] == '.') {
+        result = dot();
+    }
+    else if (str[0] == '?') {
         result = dot() + sharp();
     }
 
-    if (strlen(str) == 0) {
-        result = 1;
-    } else {
-        result = rec_solve_row(r, ++str, igrp, cache);
+    printf("[REC] %s : ", str);
+    for (i32 i = igrp; i < r.groups.size(); i++) {
+        printf("%i ", r.groups[i]);
     }
-
-    cache[(str - r.springs)][igrp] = result;
+    printf(" | %lld\n", result);
+    //cache[(str - r.springs)][igrp] = result;
     return result;
 }
 usize solve_row(Row &r) {
@@ -66,7 +100,7 @@ usize solve_row(Row &r) {
             value = -1;
         }
     }
-    print_cache(cache);
+    //print_cache(cache);
 
     return rec_solve_row(r, r.springs, 0, cache);
 }
