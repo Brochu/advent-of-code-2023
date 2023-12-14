@@ -24,6 +24,13 @@ void print_rows(std::span<Row> rows) {
     }
 }
 
+bool can_match(char *str, u8 group) {
+    printf("[MATCH-START] %s (%i)\n", str, group);
+    bool out = false;
+    printf("[MATCH-END] %s (%i) -> %s\n", str, group, out ? "T" : "F");
+    return out;
+}
+
 usize rec_solve_row(char *str, std::span<u8> groups, usize idx) {
     printf("[REC-START] %s; %i\n", str, groups[idx]);
     if (idx >= groups.size()) {
