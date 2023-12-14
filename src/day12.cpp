@@ -25,39 +25,64 @@ void print_rows(std::span<Row> rows) {
 }
 
 bool can_match(char *str, u8 group) {
-    printf("[MATCH-START] %s (%i)\n", str, group);
+    //printf("[MATCH-START] %s (%i)\n", str, group);
     bool out = false;
-    printf("[MATCH-END] %s (%i) -> %s\n", str, group, out ? "T" : "F");
-    return out;
+    for (u8 i = 0; i < group; i++) {
+        if (str[i] == '.') {
+            //printf("[MATCH-END] Could not match, found '.' at %i\n", i);
+            return false;
+        }
+    }
+
+    if (str[group] == '#') {
+        //printf("[MATCH-END] Too many #'s after match at %i\n", group);
+        return false;
+    }
+
+    //printf("[MATCH-END] MATCH VALID %s (%i)\n", str, group);
+    return true;
 }
 
 usize rec_solve_row(char *str, std::span<u8> groups, usize idx) {
-    printf("[REC-START] %s; %i\n", str, groups[idx]);
     if (idx >= groups.size()) {
         for (i32 i = 0; i < strlen(str); i++) {
             if (str[i] == '#') {
-                printf("[REC] No more groups, found # -> return 0\n");
+                //printf("[REC] No more groups, found # -> return 0\n");
                 return 0;
             }
         }
-        printf("[REC] No more groups, no more # -> return 1\n");
+        //printf("[REC] No more groups, no more # -> return 1\n");
         return 1;
     }
     if (strlen(str) == 0) {
-        printf("[REC] Springs over, we know there are groups left -> return 0\n");
+        //printf("[REC] Springs over, we know there are groups left -> return 0\n");
         return 0;
     }
 
     char c = str[0];
     u8 group = groups[idx];
+    //printf("[REC-START] %s; %i\n", str, group);
     auto dot = [&](){
         return rec_solve_row(str + 1, groups, idx);
     };
     auto tag = [&](){
         if (can_match(str, group)) {
-            return 0;
+            for (i32 i = 0; i <= group; i++) {
+                if (str[i] == '\0') {
+                    return rec_solve_row(str + i, groups, idx + 1);
+                }
+            }
+            return rec_solve_row(str + group + 1, groups, idx + 1);
         } else {
-            return 0;
+            return 0ull;
+        }
+
+        if (strlen(str) == group) {
+            if (idx == groups.size() - 1) {
+                return 1ull;
+            } else {
+                return 0ull;
+            }
         }
     };
 
@@ -69,10 +94,13 @@ usize rec_solve_row(char *str, std::span<u8> groups, usize idx) {
         out = tag();
     }
     else if (c == '?') {
-        out = tag() + dot();
+        out = dot() + tag();
+    }
+    else {
+        printf("[REC] WTF? %s\n", str);
     }
 
-    printf("[REC-END] %s; %i -> %lld\n", str, groups[idx], out);
+    //printf("[REC-END] %s; %i -> %lld\n", str, groups[idx], out);
     return out;
 }
 usize solve_row(Row &r) {
@@ -80,12 +108,14 @@ usize solve_row(Row &r) {
 }
 
 std::string part1(std::span<Row> rows) {
-    print_rows({ &rows[0], 1 });
+    //print_rows({ &rows[0], 1 });
 
+    usize count = 0;
     usize total = 0;
-    Row &r = rows[0]; {
-    //for (Row &r : rows) {
+    //Row &r = rows[746]; {
+    for (Row &r : rows) {
         total += solve_row(r);
+        printf("Finished work on %lld; total = %lld\n", count++, total);
     }
     return std::to_string(total);
 }
