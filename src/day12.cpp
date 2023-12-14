@@ -24,76 +24,15 @@ void print_rows(std::span<Row> rows) {
     }
 }
 
-bool can_match(char *sub, char next, usize group) {
-    printf("[MATCH] %s, %c\n", sub, next);
-    for (i32 i = 0; i < group; i++) {
-        if (sub[i] == '.') return false;
+usize rec_solve_row(char *str, std::span<u8> groups, usize idx) {
+    printf("[REC] %s; %i\n", str, groups[idx]);
+    if (strlen(str) == 0) {
+        return 1;
     }
-    if (next == '#') return false;
-
-    return true;
+    return rec_solve_row(++str, groups, idx);
 }
-
 usize solve_row(Row &r) {
-    const usize H = r.groups.size() + 1;
-    const usize W = strlen(r.springs) + 1;
-    usize D[H][W];
-    memset(D, 0, sizeof(usize) * W * H);
-    D[0][0] = 1;
-
-    for (i32 i = 1; i < H; i++) {
-        for (i32 j = 0; j < strlen(r.springs); j++) {
-            char c = r.springs[j];
-            usize g = r.groups[i - 1];
-            printf("(%i, %i) = (%c, %lld)\n", i, j, c, g);
-
-            auto sharp = [&](){
-                if ((strlen(r.springs) - j) < g) {
-                    return 0ull;
-                } else {
-                    char sub[g + 1];
-                    memcpy(sub, &r.springs[j], g);
-                    sub[g] = '\0';
-
-                    char next = '.';
-                    if ((j + g) < strlen(r.springs)) { next = r.springs[j + g]; }
-                    if (can_match(sub, next, g)) {
-                        usize res = 0;
-                        usize offset = (j - g);
-                        if (offset < 0) {
-                            printf("????????????????\n");
-                            res = D[i - 1][offset];
-                        } else {
-                            printf("!!!!!!!!!!!!!!\n");
-                            res = 0;
-                        }
-                        printf("[match] %lld %lld\n", offset, res);
-                        return res;
-                    } else {
-                        return 0ull;
-                    }
-                }
-            };
-
-            if (c == '.') {
-                D[i][j + 1] = D[i][j];
-            }
-            else if (c == '#') {
-                D[i][j + 1] = sharp();
-            }
-            else if (c == '?') {
-                D[i][j + 1] = D[i][j] + sharp();
-            }
-        }
-    }
-
-    for (i32 i = 0; i < H; i++) {
-        for (i32 j = 0; j < W; j++) {
-            printf("%lld ", D[i][j]);
-        }
-        printf("\n");
-    }
-    return 0;
+    return rec_solve_row(r.springs, r.groups, 0);
 }
 
 std::string part1(std::span<Row> rows) {
