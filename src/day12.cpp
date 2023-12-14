@@ -25,8 +25,13 @@ void print_rows(std::span<Row> rows) {
 }
 
 bool can_match(char *sub, char next, usize group) {
-    printf("[MATCH] %s, %c, %lld\n", sub, next, group);
-    return false;
+    printf("[MATCH] %s, %c\n", sub, next);
+    for (i32 i = 0; i < group; i++) {
+        if (sub[i] == '.') return false;
+    }
+    if (next == '#') return false;
+
+    return true;
 }
 
 usize solve_row(Row &r) {
@@ -42,12 +47,9 @@ usize solve_row(Row &r) {
             usize g = r.groups[i - 1];
             printf("(%i, %i) = (%c, %lld)\n", i, j, c, g);
 
-            if (c == '.') {
-                D[i][j + 1] = D[i][j];
-            }
-            else if (c == '#') {
+            auto sharp = [&](){
                 if ((strlen(r.springs) - j) < g) {
-                    D[i][j + 1] = 0;
+                    return 0ull;
                 } else {
                     char sub[g + 1];
                     memcpy(sub, &r.springs[j], g);
@@ -56,8 +58,31 @@ usize solve_row(Row &r) {
                     char next = '.';
                     if ((j + g) < strlen(r.springs)) { next = r.springs[j + g]; }
                     if (can_match(sub, next, g)) {
+                        usize res = 0;
+                        usize offset = (j - g);
+                        if (offset < 0) {
+                            printf("????????????????\n");
+                            res = D[i - 1][offset];
+                        } else {
+                            printf("!!!!!!!!!!!!!!\n");
+                            res = 0;
+                        }
+                        printf("[match] %lld %lld\n", offset, res);
+                        return res;
+                    } else {
+                        return 0ull;
                     }
                 }
+            };
+
+            if (c == '.') {
+                D[i][j + 1] = D[i][j];
+            }
+            else if (c == '#') {
+                D[i][j + 1] = sharp();
+            }
+            else if (c == '?') {
+                D[i][j + 1] = D[i][j] + sharp();
             }
         }
     }
