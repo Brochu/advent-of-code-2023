@@ -25,21 +25,21 @@ void print_rows(std::span<Row> rows) {
 }
 
 bool can_match(char *str, u8 group) {
-    printf("[MATCH-START] %s (%i)\n", str, group);
+    //printf("[MATCH-START] %s (%i)\n", str, group);
     bool out = false;
     for (u8 i = 0; i < group; i++) {
         if (str[i] == '.') {
-            printf("[MATCH-END] Could not match, found '.' at %i\n", i);
+            //printf("[MATCH-END] Could not match, found '.' at %i\n", i);
             return false;
         }
     }
 
     if (str[group] == '#') {
-        printf("[MATCH-END] Too many #'s after match at %i\n", group);
+        //printf("[MATCH-END] Too many #'s after match at %i\n", group);
         return false;
     }
 
-    printf("[MATCH-END] MATCH VALID %s (%i)\n", str, group);
+    //printf("[MATCH-END] MATCH VALID %s (%i)\n", str, group);
     return true;
 }
 
@@ -67,7 +67,13 @@ usize rec_solve_row(char *str, std::span<u8> groups, usize idx) {
     };
     auto tag = [&](){
         if (can_match(str, group)) {
-            //TODO: Need to check if we are last group, don't recurse for last group
+            if (strlen(str) == group) {
+                if (idx == groups.size() - 1) {
+                    return 1ull;
+                } else {
+                    return 0ull;
+                }
+            }
             for (i32 i = 0; i <= group; i++) {
                 if (str[i] == '\0') {
                     return rec_solve_row(str + i, groups, idx + 1);
