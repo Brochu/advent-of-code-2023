@@ -5,7 +5,7 @@
 
 namespace Solution {
 
-#define DEMO 1
+#define DEMO 0
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day12_demo1.txt"
 #else // ------------------------------------
@@ -65,23 +65,20 @@ usize rec_solve_row(char *str, std::span<u8> groups, usize idx) {
     auto dot = [&](){
         return rec_solve_row(str + 1, groups, idx);
     };
-    auto tag = [&](){
-        if (can_match(str, group)) {
-            if (strlen(str) == group) {
-                if (idx == groups.size() - 1) {
-                    return 1ull;
-                } else {
-                    return 0ull;
-                }
+    auto pound = [&](){
+        char current[group + 1];
+        for (i32 i = 0; i < group; i++) {
+            if (str[i] == '\0') {
+                current[i] = str[i];
+                break;
             }
-            for (i32 i = 0; i <= group; i++) {
-                if (str[i] == '\0') {
-                    return rec_solve_row(str + i, groups, idx + 1);
-                }
-            }
-            return rec_solve_row(str + group + 1, groups, idx + 1);
-        } else {
-            return 0ull;
+            else if (str[i] == '?') { current[i] = '#'; }
+            else { current[i] = str[i]; }
+        }
+        current[group] = '\0';
+
+        for (i32 i = 0; i < strlen(current); i++) {
+            if (current[i] != '#') { return 0ull; }
         }
 
         if (strlen(str) == group) {
@@ -91,6 +88,13 @@ usize rec_solve_row(char *str, std::span<u8> groups, usize idx) {
                 return 0ull;
             }
         }
+
+        if (str[group] == '?' || str[group] == '.') {
+            char *max = str + strlen(str);
+            return rec_solve_row(std::min((str + group + 1), max), groups, idx + 1);
+        }
+
+        return 0ull;
     };
 
     usize out = INT64_MAX;
@@ -98,16 +102,16 @@ usize rec_solve_row(char *str, std::span<u8> groups, usize idx) {
         out = dot();
     }
     else if (c == '#') {
-        out = tag();
+        out = pound();
     }
     else if (c == '?') {
-        out = dot() + tag();
+        out = dot() + pound();
     }
     else {
         printf("[REC] WTF? %s\n", str);
     }
 
-    printf("'%s'; %lld: (%i) -> %lld\n", str, idx, groups[idx], out);
+    //printf("'%s'; %lld: (%i) -> %lld\n", str, idx, groups[idx], out);
     return out;
 }
 usize solve_row(Row &r) {
@@ -122,7 +126,7 @@ std::string part1(std::span<Row> rows) {
     //Row &r = rows[746]; {
     for (Row &r : rows) {
         total += solve_row(r);
-        printf("---------\n");
+        //printf("---------\n");
         //printf("Finished work on %lld; total = %lld\n", count++, total);
     }
     return std::to_string(total);
