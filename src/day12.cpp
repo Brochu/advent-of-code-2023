@@ -89,16 +89,8 @@ size_t calculate(const std::string& s0, const std::string& s1)
     auto t = split(s1, ",");
 
     std::vector<size_t> groups;
-    std::stringstream os;
-    os << "\\.*";
-    for (auto c: t)
-    {
-        groups.push_back(stoi(c));
-        for (auto d = 0; d < stoi(c); d++) os << '#';
-        os << "\\.+";
-    }
+    for (auto c: t) { groups.push_back(stoi(c)); }
     auto corrupt = s0 + ".";
-    auto pattern = os.str(); 
 
     MemoMap memo_map;
     return calculate(corrupt, groups, 0, 0, memo_map);
