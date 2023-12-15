@@ -1,7 +1,9 @@
 #include "day.h"
 #include "parsing.h"
 
+#include <map>
 #include <span>
+#include <sstream>
 
 namespace Solution {
 
@@ -12,145 +14,137 @@ namespace Solution {
 #define FILE_PATH ".\\inputs\\day12.txt"
 #endif // ------------------------------------
 
-struct Row {
-    char *springs;
-    std::vector<u8> groups;
-};
-void print_rows(std::span<Row> rows) {
-    for (Row &r : rows) {
-        printf("[ROW] %s; ", r.springs);
-        for (u8 g : r.groups) { printf("%i ", g); }
-        printf("\n");
+std::vector<std::string> split(std::string source, std::string delim)
+{
+    std::vector<std::string> result;
+
+    size_t start = 0;
+    size_t end = source.find(delim);
+    while (end != std::string::npos)
+    {
+        auto sub = source.substr(start, end - start);
+        result.push_back(sub);
+
+        start = end + delim.length();
+        end   = source.find(delim, start);
     }
+
+    auto sub = source.substr(start, end - start);
+    result.push_back(sub);
+
+    return result;
 }
 
-bool can_match(char *str, u8 group) {
-    //printf("[MATCH-START] %s (%i)\n", str, group);
-    bool out = false;
-    for (u8 i = 0; i < group; i++) {
-        if (str[i] == '.') {
-            //printf("[MATCH-END] Could not match, found '.' at %i\n", i);
-            return false;
-        }
-    }
-
-    if (str[group] == '#') {
-        //printf("[MATCH-END] Too many #'s after match at %i\n", group);
-        return false;
-    }
-
-    //printf("[MATCH-END] MATCH VALID %s (%i)\n", str, group);
-    return true;
+bool matches2(const std::string& input, size_t pos, size_t len)
+{
+    // Ensure that the preceding character can be a . (need . or ?)
+    if ((pos > 0) && (input[pos-1] == '#')) return false;
+    // Can't match if the group overruns the input
+    if ((pos + len) > input.size()) return false;
+    // Ensure that the group items can all be # (need # or ?)
+    for (int i = 0; i < len; ++i) if (input[pos+i] == '.') return false;   
+    // If we are the end of the input there is no need for a following .
+    if ((pos + len) == input.size()) return true;
+    // Ensure that the following character can be a . (need . or ?)
+    return (input[pos + len] != '#');
 }
 
-usize rec_solve_row(char *str, std::span<u8> groups, usize idx) {
-    if (idx >= groups.size()) {
-        for (i32 i = 0; i < strlen(str); i++) {
-            if (str[i] == '#') {
-                //printf("[REC] No more groups, found # -> return 0\n");
-                return 0;
-            }
-        }
-        //printf("[REC] No more groups, no more # -> return 1\n");
+
+// After a day of barking up the wrong tree I remembered that memoising is a good solution.
+// I really must get this technique into my regular vocabulary.
+using Memo    = std::pair<size_t, size_t>;
+using MemoMap = std::map<Memo, size_t>;
+
+
+size_t calculate(const std::string& input, const std::vector<size_t>& groups, size_t pos, size_t grp, MemoMap& memo_map)
+{
+    Memo memo = std::make_pair(pos, grp);
+    if (memo_map.find(memo) != memo_map.end()) return memo_map[memo];
+
+    if (grp >= groups.size())
+    {
+        for (auto p = pos; p < input.size(); p++)
+            if (input[p] == '#') return 0;
         return 1;
     }
-    if (strlen(str) == 0) {
-        //printf("[REC] Springs over, we know there are groups left -> return 0\n");
-        return 0;
-    }
 
-    char c = str[0];
-    u8 group = groups[idx];
-    //printf("[REC-START] %s; %i\n", str, group);
-    auto dot = [&](){
-        return rec_solve_row(str + 1, groups, idx);
-    };
-    auto pound = [&](){
-        char current[group + 1];
-        for (i32 i = 0; i < group; i++) {
-            if (str[i] == '\0') {
-                current[i] = str[i];
-                break;
-            }
-            else if (str[i] == '?') { current[i] = '#'; }
-            else { current[i] = str[i]; }
-        }
-        current[group] = '\0';
-
-        for (i32 i = 0; i < strlen(current); i++) {
-            if (current[i] != '#') { return 0ull; }
+    size_t result = 0;
+    while (pos < input.size())
+    {
+        if (matches2(input, pos, groups[grp]))
+        {
+            result += calculate(input, groups, pos + groups[grp] + 1, grp + 1, memo_map);
         }
 
-        if (strlen(str) == group) {
-            if (idx == groups.size() - 1) {
-                return 1ull;
-            } else {
-                return 0ull;
-            }
-        }
-
-        if (str[group] == '?' || str[group] == '.') {
-            char *max = str + strlen(str);
-            return rec_solve_row(std::min((str + group + 1), max), groups, idx + 1);
-        }
-
-        return 0ull;
-    };
-
-    usize out = INT64_MAX;
-    if (c == '.') {
-        out = dot();
-    }
-    else if (c == '#') {
-        out = pound();
-    }
-    else if (c == '?') {
-        out = dot() + pound();
-    }
-    else {
-        printf("[REC] WTF? %s\n", str);
+        if (input[pos] == '#') break;
+        ++pos;
     }
 
-    //printf("'%s'; %lld: (%i) -> %lld\n", str, idx, groups[idx], out);
-    return out;
-}
-usize solve_row(Row &r) {
-    return rec_solve_row(r.springs, r.groups, 0);
+    memo_map[memo] = result;
+    return result;
 }
 
-std::string part1(std::span<Row> rows) {
-    //print_rows({ &rows[0], 1 });
+size_t calculate(const std::string& s0, const std::string& s1)
+{
+    auto t = split(s1, ",");
 
-    usize count = 0;
-    usize total = 0;
-    //Row &r = rows[746]; {
-    for (Row &r : rows) {
-        total += solve_row(r);
-        //printf("---------\n");
-        //printf("Finished work on %lld; total = %lld\n", count++, total);
+    std::vector<size_t> groups;
+    std::stringstream os;
+    os << "\\.*";
+    for (auto c: t)
+    {
+        groups.push_back(stoi(c));
+        for (auto d = 0; d < stoi(c); d++) os << '#';
+        os << "\\.+";
     }
-    return std::to_string(total);
+    auto corrupt = s0 + ".";
+    auto pattern = os.str(); 
+
+    MemoMap memo_map;
+    return calculate(corrupt, groups, 0, 0, memo_map);
 }
 
-std::string part2(std::span<Row> rows) {
-    return "NotCompleted";
+template <typename T>
+auto part1(const T& lines)
+{
+    size_t result = 0;
+    for (std::string line: lines)
+    {
+        if (line.size() == 0) continue;
+
+        auto s  = split(line, " ");
+        auto s0 = s[0];
+        auto s1 = s[1];
+        result += calculate(s0, s1);    
+    }    
+
+    return result;
+}
+
+
+template <typename T>
+auto part2(T& lines)
+{
+    size_t result = 0;
+    for (auto line: lines)
+    {
+        if (line.size() == 0) continue;
+
+        auto s  = split(line, " ");
+        auto s0 = s[0] + "?" + s[0] + "?" + s[0] + "?" + s[0] + "?" + s[0];
+        auto s1 = s[1] + "," + s[1] + "," + s[1] + "," + s[1] + "," + s[1];
+        result += calculate(s0, s1);    
+    }    
+
+    return result;
 }
 
 i32 run(std::string *part1_out, std::string *part2_out) {
     std::string in = INCLUDE_STR(FILE_PATH);
-    std::vector<Row> rows;
-    Parse::enum_str(std::move(in), "\n", [&rows](char *token){
-        std::vector<char*> sections = Parse::split_char(token, " ");
-        std::vector<char*> groupStr = Parse::split_char(sections[1], ",");
-        std::vector<u8> groups;
-        for (char *c : groupStr) {
-            groups.push_back(std::stoi(c));
-        }
-        rows.push_back({ sections[0], groups });
-    });
+    std::vector<std::string> lines = split(in, "\n");
 
-    *part1_out = part1(rows);
-    *part2_out = part2(rows);
+    *part1_out = std::to_string(part1(lines));
+    *part2_out = std::to_string(part2(lines));
 
     return 0;
 }
