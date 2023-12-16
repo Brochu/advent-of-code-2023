@@ -17,20 +17,66 @@ struct Pattern {
     usize height;
     usize width;
 };
-
-std::string part1(std::span<Pattern> pats) {
-    //Pattern &p = pats[0];
+void debug_patterns(std::span<Pattern> pats) {
     for (Pattern &p : pats) {
         for (usize i = 0; i < p.height; i++) {
-            for (usize j = 0; j < p.width; j++) {
-                printf("%c", p.data[j + (i * p.width)]);
-            }
+            for (usize j = 0; j < p.width; j++) { printf("%c", p.data[j + (i * p.width)]); }
             printf("\n");
         }
         printf("------------\n");
     }
+}
 
-    return "NotCompleted";
+bool find_vertical(Pattern &p, usize &pos) {
+    u32 cols[p.width];
+
+    bool found = false;
+    usize mirror = 0;
+    for (u32 i = 0; i < p.width; i++) {
+        u32 val = 0;
+        for (u32 j = 0; j < p.height; j++) {
+            val <<= 1;
+            if (p.data[i + (j * p.width)] == '#') { val++; };
+        }
+        //printf("Total = %i\n", val);
+        cols[i] = val;
+
+        if (i > 0 && !found && cols[i] == cols[i - 1]) {
+            //printf("Possible reflections line\n");
+            found = !found;
+            pos = i;
+            mirror = i - 1;
+        }
+        else if (found && cols[i] != cols[--mirror]) {
+            found = !found;
+        }
+        else if (found && mirror == 0) {
+            break;
+        }
+    }
+    return found;
+}
+bool find_horizontal(Pattern &p, usize &pos) {
+    return false;
+}
+
+std::string part1(std::span<Pattern> pats) {
+    usize total = 0;
+    //Pattern &p = pats[0]; {
+    for (Pattern &p : pats) {
+        usize pos = 0;
+        if (find_vertical(p, pos)) {
+            total += pos;
+        }
+        else if (find_horizontal(p, pos)) {
+            total += pos;
+        }
+        else {
+            printf("[ERR] Could not find a reflection...");
+            debug_patterns({ &p, 1});
+        }
+    }
+    return std::to_string(total);
 }
 
 std::string part2(std::span<Pattern> pats) {
