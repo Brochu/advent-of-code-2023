@@ -12,9 +12,11 @@ namespace Solution {
 #define FILE_PATH ".\\inputs\\day16.txt"
 #endif // ------------------------------------
 
-struct Pos {
+enum Direction { UP, LEFT, RIGHT, DOWN };
+struct Lava {
     usize x;
     usize y;
+    Direction dir;
 };
 
 struct Map {
@@ -44,14 +46,29 @@ void destroy_map(Map &&map) {
 }
 
 std::string part1(Map &map) {
+    std::vector<usize> energized;
+    energized.push_back(0);
+    std::vector<Lava> beams;
+    beams.push_back({ 0, 0, Direction::RIGHT });
+
+    while (!beams.empty()) {
+        Lava &current = beams.back();
+        beams.pop_back();
+    }
+
+    printf("---------------\n");
     for (i32 i = 0; i < map.height; i++) {
         for (i32 j = 0; j < map.width; j++) {
-            printf("%c", map.cells[j + (i * map.width)]);
+            const usize offset = j + (i * map.width);
+            if (std::find(energized.begin(), energized.end(), offset) != energized.end()) {
+                printf("#");
+            } else {
+                printf("%c", map.cells[offset]);
+            }
         }
         printf("\n");
     }
 
-    std::vector<usize> energized;
     return std::to_string(energized.size());
 }
 
