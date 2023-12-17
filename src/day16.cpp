@@ -6,17 +6,13 @@
 
 namespace Solution {
 
-#define DEMO 1
+#define DEMO 0
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day16_demo1.txt"
 #else // ------------------------------------
 #define FILE_PATH ".\\inputs\\day16.txt"
 #endif // ------------------------------------
-
-struct Pos {
-    i32 x;
-    i32 y;
-};
+#define FOUND(l, n) (std::find(std::begin(l), std::end(l), n) != std::end(l))
 
 enum Direction { UP, LEFT, RIGHT, DOWN };
 struct Beam {
@@ -24,6 +20,11 @@ struct Beam {
     i32 y;
     Direction dir;
 };
+bool contains_beam(std::span<Beam> beams, Beam &needle) {
+    return std::find_if(beams.begin(), beams.end(), [&needle](Beam &in){
+        return in.x == needle.x && in.y == needle.y && in.dir == needle.dir;
+    }) != beams.end();
+}
 
 struct Map {
     char *cells;
@@ -50,25 +51,19 @@ void destroy_map(Map &&map) {
     map.width = 0;
     delete[] map.cells;
 }
-void debug_map(Map &map, std::vector<Pos> &energized, std::vector<Beam> &lava) {
+void debug_map(Map &map, std::vector<usize> &energized, Beam &beam) {
     printf("---------------\n");
     for (i32 i = 0; i < map.height; i++) {
         for (i32 j = 0; j < map.width; j++) {
-            auto lava_pos = std::find_if(lava.begin(), lava.end(), [&i, &j](const Beam &in){
-                return in.x == j && in.y == i;
-            });
-            auto ener_pos = std::find_if(energized.begin(), energized.end(), [&i, &j](const Pos &in){
-                return in.x == j && in.y == i;
-            });
-            if (lava_pos != lava.end()) {
-                printf("*");
+            const usize offset = j + (i * map.width);
+            if (beam.x == j && beam.y == i) {
+                if (beam.dir == UP) printf("^");
+                else if (beam.dir == LEFT) printf("<");
+                else if (beam.dir == RIGHT) printf(">");
+                else if (beam.dir == DOWN) printf("v");
             }
-            else if (ener_pos != energized.end()) {
-                printf("#");
-            }
-            else {
-                printf("%c", map.cells[j + (i * map.width)]);
-            }
+            else if (FOUND(energized, offset)) { printf("#"); }
+            else { printf("%c", map.cells[j + (i * map.width)]); }
         }
         printf("\n");
     }
@@ -76,20 +71,70 @@ void debug_map(Map &map, std::vector<Pos> &energized, std::vector<Beam> &lava) {
 
 std::string part1(Map &map) {
     std::vector<Beam> beams;
+    std::vector<usize> energized;
+    std::vector<Beam> history;
     beams.push_back({ 0, 0, Direction::RIGHT });
-    std::vector<Pos> energized;
-    energized.push_back({ 0, 0 });
+    history.push_back(beams.back());
 
     while (!beams.empty()) {
-        Beam &current = beams.back();
+        Beam beam = beams.back();
         beams.pop_back();
+        printf("[START BEAM] at (%i, %i), %lld left, energized count: %lld\n", beam.x, beam.y, beams.size(), energized.size());
 
-        printf("[START] beams count left = %lld; at (%i, %i)\n", beams.size(), current.x, current.y);
-        debug_map(map, energized, beams);
-        std::cin.ignore(1);
+        while (beam.x >= 0 && beam.x < map.width && beam.y >= 0 && beam.y < map.height)
+        {
+            printf("[BEAM BEFORE] at (%i, %i), %lld left\n", beam.x, beam.y, beams.size());
+            //debug_map(map, energized, beam);
+            //std::cin.ignore(1);
 
-        //TODO: Simulate current beam
+            const usize offset = beam.x + (beam.y * map.width);
+            if (!FOUND(energized, offset)) { energized.push_back(offset); }
+
+            char c = map.cells[beam.x + (beam.y * map.width)];
+            if (c == '|') {
+                if (beam.dir == UP) { beam.y--; }
+                else if (beam.dir == DOWN) { beam.y++; }
+                else if (beam.dir == RIGHT || beam.dir == LEFT) {
+                    beams.push_back({ beam.x, beam.y - 1, UP });
+                    beam.y++;
+                    beam.dir = DOWN;
+                }
+            }
+            else if (c == '-') {
+                if (beam.dir == LEFT) { beam.x--; }
+                else if (beam.dir == RIGHT) { beam.x++; }
+                else if (beam.dir == UP || beam.dir == DOWN) {
+                    beams.push_back({ beam.x - 1, beam.y, LEFT });
+                    beam.x++;
+                    beam.dir = RIGHT;
+                }
+            }
+            else if (c == '/') {
+                if (beam.dir == UP) { beam.x++; beam.dir = RIGHT; }
+                else if (beam.dir == LEFT) { beam.y++; beam.dir = DOWN; }
+                else if (beam.dir == RIGHT) { beam.y--, beam.dir = UP; }
+                else if (beam.dir == DOWN) { beam.x--, beam.dir = LEFT; }
+            }
+            else if (c == '\\') {
+                if (beam.dir == UP) { beam.x--; beam.dir = LEFT; }
+                else if (beam.dir == LEFT) { beam.y--; beam.dir = UP; }
+                else if (beam.dir == RIGHT) { beam.y++, beam.dir = DOWN; }
+                else if (beam.dir == DOWN) { beam.x++, beam.dir = RIGHT; }
+            }
+            else {
+                if (beam.dir == UP) beam.y--;
+                else if (beam.dir == DOWN) beam.y++;
+                else if (beam.dir == LEFT) beam.x--;
+                else if (beam.dir == RIGHT) beam.x++;
+            }
+
+            if (contains_beam(history, beam)) { break; }
+            history.push_back(beam);
+            printf("[BEAM AFTER] at (%i, %i)\n", beam.x, beam.y);
+        }
     }
+    Beam dud { 0, 0, RIGHT };
+    //debug_map(map, energized, dud);
 
     return std::to_string(energized.size());
 }
