@@ -79,11 +79,11 @@ std::string part1(Map &map) {
     while (!beams.empty()) {
         Beam beam = beams.back();
         beams.pop_back();
-        printf("[START BEAM] at (%i, %i), %lld left, energized count: %lld\n", beam.x, beam.y, beams.size(), energized.size());
+        //printf("[START BEAM] at (%i, %i), %lld left, energized count: %lld\n", beam.x, beam.y, beams.size(), energized.size());
 
         while (beam.x >= 0 && beam.x < map.width && beam.y >= 0 && beam.y < map.height)
         {
-            printf("[BEAM BEFORE] at (%i, %i), %lld left\n", beam.x, beam.y, beams.size());
+            //printf("[BEAM BEFORE] at (%i, %i), %lld left\n", beam.x, beam.y, beams.size());
             //debug_map(map, energized, beam);
             //std::cin.ignore(1);
 
@@ -130,7 +130,7 @@ std::string part1(Map &map) {
 
             if (contains_beam(history, beam)) { break; }
             history.push_back(beam);
-            printf("[BEAM AFTER] at (%i, %i)\n", beam.x, beam.y);
+            //printf("[BEAM AFTER] at (%i, %i)\n", beam.x, beam.y);
         }
     }
     Beam dud { 0, 0, RIGHT };
