@@ -19,7 +19,7 @@ struct Pos {
 };
 
 enum Direction { UP, LEFT, RIGHT, DOWN };
-struct Lava {
+struct Beam {
     i32 x;
     i32 y;
     Direction dir;
@@ -50,11 +50,11 @@ void destroy_map(Map &&map) {
     map.width = 0;
     delete[] map.cells;
 }
-void debug_map(Map &map, std::vector<Pos> &energized, std::vector<Lava> &lava) {
+void debug_map(Map &map, std::vector<Pos> &energized, std::vector<Beam> &lava) {
     printf("---------------\n");
     for (i32 i = 0; i < map.height; i++) {
         for (i32 j = 0; j < map.width; j++) {
-            auto lava_pos = std::find_if(lava.begin(), lava.end(), [&i, &j](const Lava &in){
+            auto lava_pos = std::find_if(lava.begin(), lava.end(), [&i, &j](const Beam &in){
                 return in.x == j && in.y == i;
             });
             auto ener_pos = std::find_if(energized.begin(), energized.end(), [&i, &j](const Pos &in){
@@ -75,61 +75,20 @@ void debug_map(Map &map, std::vector<Pos> &energized, std::vector<Lava> &lava) {
 }
 
 std::string part1(Map &map) {
-    std::vector<Lava> beams;
+    std::vector<Beam> beams;
     beams.push_back({ 0, 0, Direction::RIGHT });
     std::vector<Pos> energized;
     energized.push_back({ 0, 0 });
 
     while (!beams.empty()) {
-        Lava &current = beams.back();
+        Beam &current = beams.back();
+        beams.pop_back();
 
-        printf("[START] beams count = %lld; at (%i, %i)\n", beams.size(), current.x, current.y);
+        printf("[START] beams count left = %lld; at (%i, %i)\n", beams.size(), current.x, current.y);
         debug_map(map, energized, beams);
         std::cin.ignore(1);
 
-        beams.pop_back();
-        Lava extra { -1, -1, UP };
-
-        if (map.cells[current.x + (current.y * map.width)] == '/') {
-            //if (current.dir == UP) { current.x++; current.dir = RIGHT; }
-            //else if (current.dir == LEFT) { current.y++; current.dir = DOWN; }
-            //else if (current.dir == RIGHT) { current.y--; current.dir = UP; }
-            //else if (current.dir == DOWN) { current.x--; current.dir = LEFT; }
-            current.x = -1;
-        }
-        else if (map.cells[current.x + (current.y * map.width)] == '\\') {
-            //if (current.dir == UP) { current.x--; current.dir = LEFT; }
-            //else if (current.dir == LEFT) { current.y--; current.dir = UP; }
-            //else if (current.dir == RIGHT) { current.y++; current.dir = DOWN; }
-            //else if (current.dir == DOWN) { current.x++; current.dir = RIGHT; }
-            current.x = -1;
-        }
-        else if (map.cells[current.x + (current.y * map.width)] == '|') {
-            //if (current.dir == UP) { current.y--; }
-            //else if (current.dir == LEFT || current.dir == RIGHT) {
-            //    extra = Lava { current.x, current.y + 1, DOWN};
-            //    current.y--;
-            //    current.dir = UP;
-            //}
-            //else if (current.dir == DOWN) { current.y++; }
-            current.x = -1;
-        }
-        else if (map.cells[current.x + (current.y * map.width)] == '-') {
-            //if (current.dir == UP || current.dir == DOWN) {
-            //    extra = Lava { current.x + 1, current.y, RIGHT };
-            //    current.x--;
-            //    current.dir = LEFT;
-            //}
-            //else if (current.dir == LEFT) { current.x--; }
-            //else if (current.dir == RIGHT) { current.x++; }
-            current.x = -1;
-        }
-        else {
-            if (current.dir == UP) { current.y--; }
-            else if (current.dir == LEFT) { current.x--; }
-            else if (current.dir == RIGHT) { current.x++; }
-            else if (current.dir == DOWN) { current.y++; }
-        }
+        //TODO: Simulate current beam
     }
 
     return std::to_string(energized.size());
