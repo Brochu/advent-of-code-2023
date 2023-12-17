@@ -1,6 +1,7 @@
 #include "day.h"
 #include "parsing.h"
 
+#include <iostream>
 #include <span>
 
 namespace Solution {
@@ -12,10 +13,15 @@ namespace Solution {
 #define FILE_PATH ".\\inputs\\day16.txt"
 #endif // ------------------------------------
 
+struct Pos {
+    i32 x;
+    i32 y;
+};
+
 enum Direction { UP, LEFT, RIGHT, DOWN };
 struct Lava {
-    usize x;
-    usize y;
+    i32 x;
+    i32 y;
     Direction dir;
 };
 
@@ -44,29 +50,86 @@ void destroy_map(Map &&map) {
     map.width = 0;
     delete[] map.cells;
 }
-
-std::string part1(Map &map) {
-    std::vector<usize> energized;
-    energized.push_back(0);
-    std::vector<Lava> beams;
-    beams.push_back({ 0, 0, Direction::RIGHT });
-
-    while (!beams.empty()) {
-        Lava &current = beams.back();
-        beams.pop_back();
-    }
-
+void debug_map(Map &map, std::vector<Pos> &energized, std::vector<Lava> &lava) {
     printf("---------------\n");
     for (i32 i = 0; i < map.height; i++) {
         for (i32 j = 0; j < map.width; j++) {
-            const usize offset = j + (i * map.width);
-            if (std::find(energized.begin(), energized.end(), offset) != energized.end()) {
+            auto lava_pos = std::find_if(lava.begin(), lava.end(), [&i, &j](const Lava &in){
+                return in.x == j && in.y == i;
+            });
+            auto ener_pos = std::find_if(energized.begin(), energized.end(), [&i, &j](const Pos &in){
+                return in.x == j && in.y == i;
+            });
+            if (lava_pos != lava.end()) {
+                printf("*");
+            }
+            else if (ener_pos != energized.end()) {
                 printf("#");
-            } else {
-                printf("%c", map.cells[offset]);
+            }
+            else {
+                printf("%c", map.cells[j + (i * map.width)]);
             }
         }
         printf("\n");
+    }
+}
+
+std::string part1(Map &map) {
+    std::vector<Lava> beams;
+    beams.push_back({ 0, 0, Direction::RIGHT });
+    std::vector<Pos> energized;
+    energized.push_back({ 0, 0 });
+
+    while (!beams.empty()) {
+        Lava &current = beams.back();
+
+        printf("[START] beams count = %lld; at (%i, %i)\n", beams.size(), current.x, current.y);
+        debug_map(map, energized, beams);
+        std::cin.ignore(1);
+
+        beams.pop_back();
+        Lava extra { -1, -1, UP };
+
+        if (map.cells[current.x + (current.y * map.width)] == '/') {
+            //if (current.dir == UP) { current.x++; current.dir = RIGHT; }
+            //else if (current.dir == LEFT) { current.y++; current.dir = DOWN; }
+            //else if (current.dir == RIGHT) { current.y--; current.dir = UP; }
+            //else if (current.dir == DOWN) { current.x--; current.dir = LEFT; }
+            current.x = -1;
+        }
+        else if (map.cells[current.x + (current.y * map.width)] == '\\') {
+            //if (current.dir == UP) { current.x--; current.dir = LEFT; }
+            //else if (current.dir == LEFT) { current.y--; current.dir = UP; }
+            //else if (current.dir == RIGHT) { current.y++; current.dir = DOWN; }
+            //else if (current.dir == DOWN) { current.x++; current.dir = RIGHT; }
+            current.x = -1;
+        }
+        else if (map.cells[current.x + (current.y * map.width)] == '|') {
+            //if (current.dir == UP) { current.y--; }
+            //else if (current.dir == LEFT || current.dir == RIGHT) {
+            //    extra = Lava { current.x, current.y + 1, DOWN};
+            //    current.y--;
+            //    current.dir = UP;
+            //}
+            //else if (current.dir == DOWN) { current.y++; }
+            current.x = -1;
+        }
+        else if (map.cells[current.x + (current.y * map.width)] == '-') {
+            //if (current.dir == UP || current.dir == DOWN) {
+            //    extra = Lava { current.x + 1, current.y, RIGHT };
+            //    current.x--;
+            //    current.dir = LEFT;
+            //}
+            //else if (current.dir == LEFT) { current.x--; }
+            //else if (current.dir == RIGHT) { current.x++; }
+            current.x = -1;
+        }
+        else {
+            if (current.dir == UP) { current.y--; }
+            else if (current.dir == LEFT) { current.x--; }
+            else if (current.dir == RIGHT) { current.x++; }
+            else if (current.dir == DOWN) { current.y++; }
+        }
     }
 
     return std::to_string(energized.size());
