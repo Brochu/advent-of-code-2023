@@ -1,6 +1,7 @@
 #include "day.h"
 #include "parsing.h"
 
+#include <limits>
 #include <queue>
 #include <span>
 #include <unordered_map>
@@ -28,11 +29,58 @@ void debug_map(Map &map) {
     }
 }
 
+struct State {
+    i32 x, y;
+    i32 prevx, prevy;
+    float dist;
+};
+
 std::string part1(Map &map) {
     debug_map(map);
 
-    std::unordered_map<usize, u32> dists;
-    return std::to_string(dists[(map.h * map.w) - 1]);
+    std::unordered_map<usize, usize> prevs;
+    std::unordered_map<usize, float> dists;
+    for (i32 i = 0; i < map.h; i++) {
+        for (i32 j = 0; j < map.w; j++) {
+            const usize offset = j + (i * map.w);
+            prevs[offset] = ~0;
+            dists[offset] = std::numeric_limits<float>::infinity();
+        }
+    }
+    prevs[0] = ~0;
+    dists[0] = 0.f;
+
+    auto cmp = [](State &left, State &right){ return left.dist > right.dist; };
+    std::priority_queue<State, std::vector<State>, decltype(cmp)> Q(cmp);
+    Q.push({ 0, 0, -1, -1, 0.f });
+
+    while (!Q.empty()) {
+        const State u = Q.top();
+        Q.pop();
+        printf("[PICKED] (%i, %i) (from %i, %i) [%f]\n", u.x, u.y, u.prevx, u.prevy, u.dist);
+
+        std::vector<usize> neighbors;
+        if (u.y > 0 && (u.x != u.prevx || (u.y - 1) != u.prevy)) {
+            neighbors.push_back(u.x + ((u.y - 1) * map.w));
+        }
+        if (u.y < (map.h - 1) && (u.x != u.prevx || (u.y + 1) != u.prevy)) {
+            neighbors.push_back(u.x + ((u.y + 1) * map.w));
+        }
+        if (u.x > 0 && ((u.x - 1) != u.prevx || u.y != u.prevy)) {
+            neighbors.push_back((u.x - 1) + (u.y * map.w));
+        }
+        if (u.x < (map.w - 1) && ((u.x + 1) != u.prevx || u.y != u.prevy)) {
+            neighbors.push_back((u.x + 1) + (u.y * map.w));
+        }
+        printf("Neighbors -> \n");
+        for (usize n : neighbors) {
+            printf("%lld -> (%lld, %lld)\n", n, n % map.w, n / map.w);
+            //TODO: Condition checks for updating dists and prevs
+        }
+    }
+
+    const usize exit = (map.h * map.w) - 1;
+    return std::to_string(dists[exit]);
 }
 
 std::string part2() {
