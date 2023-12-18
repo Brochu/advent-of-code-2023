@@ -96,7 +96,7 @@ std::string part1(Map &map) {
     while (!Q.empty()) {
         const State u = Q.top();
         Q.pop();
-        //if (u.count > 3) continue;
+        if (u.count > 3) continue;
 
         usize idx = u.x + (u.y * map.w);
         //printf("[PICKED] (%i, %i) (from %i; %i) [%f]\n", u.x, u.y, u.from, u.count, u.dist);
@@ -115,7 +115,7 @@ std::string part1(Map &map) {
             neighbors.push_back((u.x + 1) + (u.y * map.w));
         }
         for (usize n : neighbors) {
-            if (dists[idx] + map.cells[n] < dists[n]) {
+            if (dists[idx] + map.cells[n] <= dists[n]) {
                 prevs[n] = idx;
                 dists[n] = dists[idx] + map.cells[n];
                 i32 x = n % map.w;
