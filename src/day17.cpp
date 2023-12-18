@@ -1,6 +1,7 @@
 #include "day.h"
 #include "parsing.h"
 
+#include <iostream>
 #include <limits>
 #include <queue>
 #include <span>
@@ -30,16 +31,32 @@ void debug_map(Map &map) {
     }
 }
 void debug_path(Map &map, std::unordered_map<usize, usize> &prevs) {
+    std::vector<usize> path;
     usize offset = (map.w * map.h) - 1;
-    printf("[PATH] ");
-    while (prevs[offset] != ~0) {
-        i32 x = prevs[offset] % map.w;
-        i32 y = prevs[offset] / map.w;
-        printf("(%i, %i); ", x, y);
+    path.push_back(offset);
 
+    while (prevs[offset] != ~0) {
+        path.insert(path.begin(), prevs[offset]);
         offset = prevs[offset];
     }
-    printf("\n");
+
+    printf("[PATH]\n");
+    for (usize node : path) {
+        i32 x = node % map.w;
+        i32 y = node / map.w;
+        printf("(%i, %i)\n", x, y);
+    }
+    for (i32 i = 0; i < map.h; i++) {
+        for (i32 j = 0; j < map.w; j++) {
+            const usize offset = j + (i * map.w);
+            if (std::find(path.begin(), path.end(), offset) != path.end()) {
+                printf("* ");
+            } else {
+                printf("%i ", map.cells[offset]);
+            }
+        }
+        printf("\n");
+    }
 }
 void debug_dists(Map &map, std::unordered_map<usize, float> &dists) {
     for (i32 i = 0; i < map.h; i++) {
@@ -79,8 +96,10 @@ std::string part1(Map &map) {
     while (!Q.empty()) {
         const State u = Q.top();
         Q.pop();
+        //if (u.count > 3) continue;
+
         usize idx = u.x + (u.y * map.w);
-        printf("[PICKED] (%i, %i) (from %i; %i) [%f]\n", u.x, u.y, u.from, u.count, u.dist);
+        //printf("[PICKED] (%i, %i) (from %i; %i) [%f]\n", u.x, u.y, u.from, u.count, u.dist);
 
         std::vector<usize> neighbors;
         if (u.y > 0 && u.from != Direction::UP) {
@@ -95,23 +114,22 @@ std::string part1(Map &map) {
         if (u.x < (map.w - 1) && u.from != Direction::RIGHT) {
             neighbors.push_back((u.x + 1) + (u.y * map.w));
         }
-        //printf("Neighbors -> \n");
         for (usize n : neighbors) {
-            //printf("%lld -> (%lld, %lld)\n", n, n % map.w, n / map.w);
-            //TODO: Condition checks for updating dists and prevs
             if (dists[idx] + map.cells[n] < dists[n]) {
                 prevs[n] = idx;
                 dists[n] = dists[idx] + map.cells[n];
                 i32 x = n % map.w;
                 i32 y = n / map.w;
-                Direction from = UP;
+                Direction from = NONE;
                 if (x - u.x == 1) from = Direction::LEFT;
                 else if (x - u.x == -1) from = Direction::RIGHT;
                 else if (y - u.y == 1) from = Direction::UP;
                 else if (y - u.y == -1) from = Direction::DOWN;
+                //printf("[ADDED] (%i, %i), prev = (%i, %i), dist = %f\n", x, y, u.x, u.y, dists[n]);
                 Q.push({ x, y, dists[n], from, u.from == from ? u.count + 1 : 1 });
             }
         }
+        //std::cin.ignore(1);
     }
     //debug_dists(map, dists);
     debug_path(map, prevs);
