@@ -16,131 +16,114 @@ namespace Solution {
 #define FILE_PATH ".\\inputs\\day17.txt"
 #endif // ------------------------------------
 
-enum Direction { NONE, UP, LEFT, RIGHT, DOWN };
+struct Pos { i32 x, y; };
+Pos* find_pos(std::span<Pos> list, Pos needle) {
+    auto it = std::find_if(list.begin(), list.end(), [&needle](Pos &in){
+        return needle.x == in.x && needle.y == in.y;
+    });
+    if (it != list.end()) { return &*it; }
+    return nullptr;
+}
+
 struct Map {
     u8 *cells;
-    usize h;
-    usize w;
+    usize height;
+    usize width;
+
+    u8 get(Pos p){ return cells[p.y * width + p.x]; }
+    bool is_valid(Pos p) { return (p.x >= 0 && p.x < width) && (p.y >= 0 && p.y < height); }
 };
+usize pos_offset(Map &map, Pos p) { return p.y * map.width + p.x; }
+Pos offset_pos(Map &map, usize o) {
+    i32 x = o % map.width;
+    i32 y = o / map.width;
+    return { x, y };
+}
 void debug_map(Map &map) {
-    for (i32 i = 0; i < map.h; i++) {
-        for (i32 j = 0; j < map.w; j++) {
-            printf("%i ", map.cells[j + (i * map.w)]);
-        }
+    for (i32 i = 0; i < map.height; i++) {
+        for (i32 j = 0; j < map.width; j++) { printf("%i ", map.get({ i, j })); }
         printf("\n");
     }
 }
-void debug_path(Map &map, std::unordered_map<usize, usize> &prevs) {
-    std::vector<usize> path;
-    usize offset = (map.w * map.h) - 1;
-    path.push_back(offset);
+void debug_path(Map &map, std::unordered_map<usize, Pos> &prevs) {
+    std::vector<Pos> path;
+    usize offset = (map.width * map.height) - 1;
+    path.push_back({ (i32)map.width - 1, (i32)map.height - 1 });
 
-    while (prevs[offset] != ~0) {
+    while (prevs[offset].x != -1 && prevs[offset].y != -1) {
         path.insert(path.begin(), prevs[offset]);
-        offset = prevs[offset];
+        offset = pos_offset(map ,prevs[offset]);
     }
 
     printf("[PATH]\n");
-    for (usize node : path) {
-        i32 x = node % map.w;
-        i32 y = node / map.w;
-        printf("(%i, %i)\n", x, y);
+    for (Pos &node : path) {
+        printf("(%i, %i)\n", node.x, node.y);
     }
-    for (i32 i = 0; i < map.h; i++) {
-        for (i32 j = 0; j < map.w; j++) {
-            const usize offset = j + (i * map.w);
-            if (std::find(path.begin(), path.end(), offset) != path.end()) {
-                printf("* ");
-            } else {
-                printf("%i ", map.cells[offset]);
-            }
-        }
-        printf("\n");
-    }
-}
-void debug_dists(Map &map, std::unordered_map<usize, float> &dists) {
-    for (i32 i = 0; i < map.h; i++) {
-        for (i32 j = 0; j < map.w; j++) {
-            printf("%f ", dists[j + (i * map.w)]);
+    for (i32 i = 0; i < map.height; i++) {
+        for (i32 j = 0; j < map.width; j++) {
+            Pos *p = find_pos(path, { i, j });
+            if (p != nullptr) printf("* ");
+            else printf("%i ", map.get({ i, j }));
         }
         printf("\n");
     }
 }
 
-struct State {
-    i32 x, y;
-    float dist;
-    Direction from;
-    u32 count;
-};
-
-Direction get_dir(i32 x, i32 y, i32 nx, i32 ny) {
-    if (x - nx == 1) return Direction::LEFT;
-    else if (x - nx == -1) return Direction::RIGHT;
-    else if (y - ny == 1) return Direction::UP;
-    else if (y - ny == -1) return Direction::DOWN;
-    else return Direction::NONE;
+struct State { Pos pos; Pos dir; float loss; u32 count; };
+void debug_state(State &s) {
+    printf("[STATE] pos=(%i, %i); dir=(%i, %i); loss=%f; count=%i\n",
+           s.pos.x, s.pos.y, s.dir.x, s.dir.y, s.loss, s.count);
 }
 
 std::string part1(Map &map) {
     debug_map(map);
+    const Pos start = { 0, 0 };
 
-    auto cmp = [](State &left, State &right){ return left.dist > right.dist; };
+    auto cmp = [](State &left, State &right){ return left.loss > right.loss; };
     std::priority_queue<State, std::vector<State>, decltype(cmp)> Q(cmp);
-    Q.push({ 0, 0, 0.f, NONE, 1 }); //THIS IS WRONG
-    //TODO: We need to store same dir jump counts in prev?
+    Q.push({ start, {1, 0}, 0, 0 });
+    Q.push({ start, {0, 1}, 0, 0 });
 
-    std::unordered_map<usize, usize> prevs;
+    std::unordered_map<usize, Pos> prevs;
     std::unordered_map<usize, float> dists;
-    for (i32 i = 0; i < map.h; i++) {
-        for (i32 j = 0; j < map.w; j++) {
-            const usize offset = j + (i * map.w);
-            prevs[offset] = ~0;
+    for (i32 i = 0; i < map.height; i++) {
+        for (i32 j = 0; j < map.width; j++) {
+            const usize offset = i * map.width + j;
+            prevs[offset] = { -1, -1 };
             dists[offset] = std::numeric_limits<float>::infinity();
-            Q.push({ j, i, std::numeric_limits<float>::infinity(), NONE, 1 });
         }
     }
-    prevs[0] = ~0;
+    prevs[0] = { -1, -1 };
     dists[0] = 0.f;
 
     while (!Q.empty()) {
-        const State u = Q.top();
+        State u = Q.top();
         Q.pop();
-        if (u.count > 3) continue;
+        debug_state(u);
 
-        usize idx = u.x + (u.y * map.w);
-        printf("[PICKED] (%i, %i) (from %i; %i) [%f]\n", u.x, u.y, u.from, u.count, u.dist);
-
-        std::vector<usize> neighbors;
-        if (u.y > 0) {
-            neighbors.push_back(u.x + ((u.y - 1) * map.w));
+        printf("[DIRECTIONS]:\n");
+        // TURN LEFT
+        Pos go_left = { u.dir.y, -u.dir.x };
+        Pos left = { u.pos.x + go_left.x, u.pos.y + go_left.y };
+        if (map.is_valid(left)) {
+            printf("- (%i, %i), (%i, %i)\n", go_left.x, go_left.y, left.x, left.y);
         }
-        if (u.y < (map.h - 1)) {
-            neighbors.push_back(u.x + ((u.y + 1) * map.w));
+        // GO FORWARD
+        Pos go_forward = u.dir;
+        Pos forward = { u.pos.x + go_forward.x, u.pos.y + go_forward.y };
+        if (map.is_valid(forward)) {
+            printf("- (%i, %i), (%i, %i)\n", go_forward.x, go_forward.y, forward.x, forward.y);
         }
-        if (u.x > 0) {
-            neighbors.push_back((u.x - 1) + (u.y * map.w));
+        // TURN RIGHT
+        Pos go_right = { -u.dir.y, u.dir.x };
+        Pos right = { u.pos.x + go_right.x, u.pos.y + go_right.y };
+        if (map.is_valid(right)) {
+            printf("- (%i, %i), (%i, %i)\n", go_right.x, go_right.y, right.x, right.y);
         }
-        if (u.x < (map.w - 1) && u.from != Direction::RIGHT) {
-            neighbors.push_back((u.x + 1) + (u.y * map.w));
-        }
-        for (usize n : neighbors) {
-            if (dists[idx] + map.cells[n] < dists[n]) {
-                prevs[n] = idx;
-                dists[n] = dists[idx] + map.cells[n];
-                i32 x = n % map.w;
-                i32 y = n / map.w;
-                printf("[ADDED] (%i, %i), prev = (%i, %i), dist = %f\n", x, y, u.x, u.y, dists[n]);
-                Direction from = get_dir(x, y, u.x, u.y);
-                Q.push({ x, y, dists[n], from, u.from == from ? u.count + 1 : 1 });
-            }
-        }
-        //std::cin.ignore(1);
     }
-    debug_dists(map, dists);
-    debug_path(map, prevs);
+    //debug_path(map, prevs);
 
-    const usize exit = (map.h * map.w) - 1;
+    const usize exit = (map.width * map.height) - 1;
     return std::to_string(dists[exit]);
 }
 
@@ -153,9 +136,9 @@ int run(std::string *part1_out, std::string *part2_out) {
     std::vector<char*> lines = Parse::split_str(std::move(in), "\n");
 
     Map m { new u8[lines.size() * strlen(lines[0])](), lines.size(), strlen(lines[0]) };
-    for (i32 i = 0; i < m.h; i++) {
-        for (i32 j = 0; j < m.w; j++) {
-            m.cells[j + (i * m.w)] = lines[i][j] - '0';
+    for (i32 i = 0; i < m.height; i++) {
+        for (i32 j = 0; j < m.width; j++) {
+            m.cells[j + (i * m.width)] = lines[i][j] - '0';
         }
     }
 
