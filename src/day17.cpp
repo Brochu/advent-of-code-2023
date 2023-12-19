@@ -24,6 +24,11 @@ Pos* find_pos(std::span<Pos> list, Pos needle) {
     if (it != list.end()) { return &*it; }
     return nullptr;
 }
+void get_dirs(Pos &p, std::span<Pos> dirs) {
+    dirs[0] = { p.y, -p.x };
+    dirs[1] = p;
+    dirs[2] = { -p.y, p.x };
+}
 
 struct Map {
     u8 *cells;
@@ -99,26 +104,19 @@ std::string part1(Map &map) {
     while (!Q.empty()) {
         State u = Q.top();
         Q.pop();
+        const usize uo = pos_offset(map, u.pos);
         debug_state(u);
 
         printf("[DIRECTIONS]:\n");
-        // TURN LEFT
-        Pos go_left = { u.dir.y, -u.dir.x };
-        Pos left = { u.pos.x + go_left.x, u.pos.y + go_left.y };
-        if (map.is_valid(left)) {
-            printf("- (%i, %i), (%i, %i)\n", go_left.x, go_left.y, left.x, left.y);
-        }
-        // GO FORWARD
-        Pos go_forward = u.dir;
-        Pos forward = { u.pos.x + go_forward.x, u.pos.y + go_forward.y };
-        if (map.is_valid(forward)) {
-            printf("- (%i, %i), (%i, %i)\n", go_forward.x, go_forward.y, forward.x, forward.y);
-        }
-        // TURN RIGHT
-        Pos go_right = { -u.dir.y, u.dir.x };
-        Pos right = { u.pos.x + go_right.x, u.pos.y + go_right.y };
-        if (map.is_valid(right)) {
-            printf("- (%i, %i), (%i, %i)\n", go_right.x, go_right.y, right.x, right.y);
+        Pos dirs[3];
+        get_dirs(u.dir, dirs);
+
+        for (Pos dir : dirs) {
+            Pos newpos = { u.pos.x + dir.x, u.pos.y + dir.y };
+            if (map.is_valid(newpos)) {
+                const usize offset = pos_offset(map, newpos);
+                printf("- (%i, %i), (%i, %i) [%lld]\n", dir.x, dir.y, newpos.x, newpos.y, offset);
+            }
         }
     }
     //debug_path(map, prevs);
