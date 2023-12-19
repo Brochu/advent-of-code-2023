@@ -63,7 +63,6 @@ std::string part1(Map &map) {
         State u = Q.top();
         Q.pop();
     }
-    //debug_path(map, prevs);
 
     const usize exit = (map.width * map.height) - 1;
     const float result = std::min(dist[exit][0], std::min(dist[exit][1], std::min(dist[exit][2], dist[exit][3])));
