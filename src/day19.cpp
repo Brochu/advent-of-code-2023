@@ -46,17 +46,19 @@ usize var_idx(char var) {
 }
 
 std::string part1(std::span<Flow> flows, std::span<Part> parts) {
-    auto in = std::find_if(flows.begin(), flows.end(), [](Flow &f){ return strcmp(f.name, "in") == 0; });
-    debug_flow(*in);
+    auto pred = [](Flow &f){ return strcmp(f.name, "in") == 0; };
+    //debug_flow(*in);
 
-    Part &p = parts[0]; {
-    //for (Part &p : parts) {
+    usize count = 0;
+    //Part &p = parts[0]; {
+    for (Part &p : parts) {
         debug_part(p);
-        Flow &ongoing = *in; {
-        //while (strcmp(ongoing.name, "A") != 0 && strcmp(ongoing.name, "R") != 0) {
+        auto ongoing = std::find_if(flows.begin(), flows.end(), pred);
+        while (strcmp(ongoing->name, "A") != 0 && strcmp(ongoing->name, "R") != 0) {
+            //debug_flow(*ongoing);
             const char *final = "";
-            for (int i = 0; i < ongoing.stages.size() - 1; i++) {
-                Stage &s = ongoing.stages[i];
+            for (int i = 0; i < ongoing->stages.size() - 1; i++) {
+                Stage &s = ongoing->stages[i];
                 int part_val = p.values[var_idx(s.var)];
 
                 bool check = false;
@@ -69,19 +71,24 @@ std::string part1(std::span<Flow> flows, std::span<Part> parts) {
             }
 
             if (strcmp(final, "") == 0) {
-                final = ongoing.stages[ongoing.stages.size() - 1].target;
+                final = ongoing->stages[ongoing->stages.size() - 1].target;
             }
 
-            auto t = std::find_if(flows.begin(), flows.end(), [&final](Flow &f){
+            ongoing = std::find_if(flows.begin(), flows.end(), [&final](Flow &f){
                 return strcmp(f.name, final) == 0;
             });
-            ongoing = *t;
         }
 
-        //TODO: Count if accepted
+        debug_flow(*ongoing);
+        printf("\n");
+        if (strcmp(ongoing->name, "A") == 0) {
+            count += p.values[0];
+            count += p.values[1];
+            count += p.values[2];
+            count += p.values[3];
+        }
     }
 
-    usize count = 0;
     return std::to_string(count);
 }
 
