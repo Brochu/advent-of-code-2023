@@ -5,7 +5,7 @@
 
 namespace Solution {
 
-#define DEMO 1
+#define DEMO 0
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day19_demo1.txt"
 #else // ------------------------------------
@@ -71,18 +71,19 @@ const char* apply_flow(Flow &fl, Part &p) {
 std::string part1(std::span<Flow> flows, std::span<Part> parts) {
     usize rating = 0;
 
-    Part part = parts[0];
-    const char *curr = "in";
-    while (strcmp(curr, "A") != 0 && strcmp(curr, "R") != 0) {
-        Flow *fl = find_flow(flows, curr);
-        debug_flow(*fl);
+    for (Part &p : parts) {
+        const char *curr = "in";
+        while (strcmp(curr, "A") != 0 && strcmp(curr, "R") != 0) {
+            Flow *fl = find_flow(flows, curr);
+            debug_flow(*fl);
 
-        curr = apply_flow(*fl, part);
-        printf("next: '%s'\n", curr);
-    }
+            curr = apply_flow(*fl, p);
+            printf("next: '%s'\n", curr);
+        }
 
-    if (strcmp(curr, "A") == 0) {
-        rating += part_value(part);
+        if (strcmp(curr, "A") == 0) {
+            rating += part_value(p);
+        }
     }
     return std::to_string(rating);
 }
