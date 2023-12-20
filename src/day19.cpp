@@ -19,7 +19,7 @@ struct Stage {
     char *target;
 };
 struct Flow {
-    char *name;
+    const char *name;
     std::vector<Stage> stages;
 };
 void debug_flow(Flow &flow) {
@@ -52,6 +52,33 @@ std::string part1(std::span<Flow> flows, std::span<Part> parts) {
     Part &p = parts[0]; {
     //for (Part &p : parts) {
         debug_part(p);
+        Flow &ongoing = *in; {
+        //while (strcmp(ongoing.name, "A") != 0 && strcmp(ongoing.name, "R") != 0) {
+            const char *final = "";
+            for (int i = 0; i < ongoing.stages.size() - 1; i++) {
+                Stage &s = ongoing.stages[i];
+                int part_val = p.values[var_idx(s.var)];
+
+                bool check = false;
+                if (s.op == '<') check = part_val < s.value;
+                else if (s.op == '>') check = part_val > s.value;
+
+                if (check) {
+                    final = s.target;
+                }
+            }
+
+            if (strcmp(final, "") == 0) {
+                final = ongoing.stages[ongoing.stages.size() - 1].target;
+            }
+
+            auto t = std::find_if(flows.begin(), flows.end(), [&final](Flow &f){
+                return strcmp(f.name, final) == 0;
+            });
+            ongoing = *t;
+        }
+
+        //TODO: Count if accepted
     }
 
     usize count = 0;
@@ -94,6 +121,8 @@ int run(std::string *part1_out, std::string *part2_out) {
         }
         workflows.push_back(fl);
     });
+    workflows.push_back({ "A" });
+    workflows.push_back({ "R" });
 
     std::vector<Part>parts;
     Parse::enum_char(sections[1], "\n", [&parts](char *token){
