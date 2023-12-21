@@ -5,36 +5,36 @@
 
 namespace Solution {
 
-#define DEMO 0
+#define DEMO 1
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day20_demo1.txt"
 #else // ------------------------------------
 #define FILE_PATH ".\\inputs\\day20.txt"
 #endif // ------------------------------------
 
-struct Entry {
-    const char *name;
+struct Module {
+    char type;
+    char *name;
     char *rest;
+    std::vector<usize> outputs;
+
+    usize *state;
+    usize mask;
+
+    // UNSURE about these, should be for conjunction case
+    usize start;
+    std::vector<usize> inputs;
 };
 struct System {
-    std::vector<Entry> data;
+    std::vector<Module> modules;
 
-    std::vector<usize> flipflops;
-    std::vector<usize> conjunctions;
-    //store states in two u64's
+    usize flip_states;
+    usize conj_states;
 };
 void debug_system(System &sys) {
     printf("[SYSTEM]:\n");
-    for (Entry &e : sys.data) {
+    for (Module &e : sys.modules) {
         printf(" - '%s', '%s'\n", e.name, e.rest);
-    }
-    printf("[FLIPS (%lld)]:\n", sys.flipflops.size());
-    for (usize idx : sys.flipflops) {
-        printf(" - '%lld'\n", idx);
-    }
-    printf("[CONJC (%lld)]:\n", sys.conjunctions.size());
-    for (usize idx : sys.conjunctions) {
-        printf(" - '%lld'\n", idx);
     }
 }
 
@@ -64,14 +64,13 @@ int run(std::string *part1_out, std::string *part2_out) {
         Parse::split_once(token, " -> ", &name, &rest);
 
         if (strcmp(name, "broadcaster") == 0) {
-            sys.data.push_back({ name, rest });
+            sys.modules.push_back({ 'B', name, rest });
         } else {
-            sys.data.push_back({ &name[1], rest });
             if (name[0] == '%') {
-                sys.flipflops.push_back(sys.data.size() - 1);
+                sys.modules.push_back({ name[0], &name[1], rest, {}, &sys.flip_states });
             }
             else if (name[0] == '&') {
-                sys.conjunctions.push_back(sys.data.size() - 1);
+                sys.modules.push_back({ name[0], &name[1], rest, {}, &sys.conj_states });
             }
         }
     });
