@@ -7,7 +7,7 @@ namespace Solution {
 
 #define DEMO 1
 #if DEMO == 1 // ------------------------------------
-#define FILE_PATH ".\\inputs\\day20_demo1.txt"
+#define FILE_PATH ".\\inputs\\day20_demo2.txt"
 #else // ------------------------------------
 #define FILE_PATH ".\\inputs\\day20.txt"
 #endif // ------------------------------------
@@ -92,20 +92,45 @@ struct Pulse {
     Power pow;
 };
 
+struct CacheEntry {
+    std::tuple<usize, usize> key;
+    usize lo_pulses;
+    usize hi_pulses;
+    std::tuple<usize, usize> out;
+};
+
 usize part1(System &sys) {
-    usize lo_count = 0;
-    usize hi_count = 0;
+    usize lo_total = 0;
+    usize hi_total = 0;
 
     const auto pred = [](Module &in){ return in.type == 'B'; };
     usize start = std::distance(sys.modules.begin(), std::find_if(sys.modules.begin(), sys.modules.end(), pred));
+    std::vector<CacheEntry> cache;
 
-    for (i32 i = 0; i < 1; i++) {
+    for (i32 i = 0; i < 1000; i++) {
+        usize lo_count = 0;
+        usize hi_count = 0;
+        auto it = std::find_if(cache.begin(), cache.end(), [&sys](CacheEntry &in){
+            return in.key == std::tuple<usize, usize> { sys.flip_states, sys.conj_states };
+        });
+        if (it != cache.end()) {
+            printf("[CACHED] lo_pulses=%lld, hi_pulses=%lld\n", it->lo_pulses, it->hi_pulses);
+            lo_total += it->lo_pulses;
+            hi_total += it->hi_pulses;
+            sys.flip_states = std::get<0>(it->out);
+            sys.conj_states = std::get<1>(it->out);
+            continue;
+        }
+        std::tuple<usize, usize> key { sys.flip_states, sys.conj_states };
+
         std::vector<Pulse> stack;
         stack.push_back({ INT_MAX, start, Power::LOW }); // BUTTON PUSHED
 
         usize current = 0;
         while (current < stack.size()) {
             Pulse pulse = stack[current];
+            if (pulse.pow == Power::LOW) lo_count++;
+            else if (pulse.pow == Power::HIGH) hi_count++;
             if (pulse.to >= sys.modules.size()) {
                 current++;
                 continue;
@@ -146,10 +171,6 @@ usize part1(System &sys) {
                     stack.push_back({ pulse.to, idx, newpow });
                 }
             }
-
-            if (pulse.pow == Power::LOW) lo_count++;
-            else if (pulse.pow == Power::HIGH) hi_count++;
-
             current++;
         }
 
@@ -159,9 +180,14 @@ usize part1(System &sys) {
         }
 
         debug_system(sys);
+        lo_total += lo_count;
+        hi_total += hi_count;
+        cache.push_back({ key, lo_count, hi_count, {sys.flip_states, sys.conj_states} });
+        printf("[CACHING] (%lld, %lld) -> lo_count=%lld; hi_count=%lld:\n",
+               std::get<0>(key), std::get<1>(key), lo_count, hi_count);
     }
-    printf("lo_count=%lld; hi_count=%lld:\n", lo_count, hi_count);
-    return lo_count * hi_count;
+    printf("lo_total=%lld; hi_total=%lld:\n", lo_total, hi_total);
+    return lo_total * hi_total;
 }
 
 std::string part2() {
