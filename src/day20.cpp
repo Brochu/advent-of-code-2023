@@ -13,9 +13,10 @@ namespace Solution {
 #define FILE_PATH ".\\inputs\\day20.txt"
 #endif // ------------------------------------
 
+enum Power { LOW, HIGH };
 struct Input {
     usize inputidx;
-    u8 offset;
+    Power pow;
 };
 struct Module {
     char type;
@@ -31,9 +32,7 @@ struct Module {
 };
 struct System {
     std::vector<Module> modules;
-
     usize flip_states = 0;
-    usize conj_states = 0;
 };
 void debug_system(System &sys) {
     printf("[SYSTEM]:\n");
@@ -45,7 +44,7 @@ void debug_system(System &sys) {
         if (sys.modules[i].type == '&') {
             printf(", ");
             for (Input in : sys.modules[i].inputs) {
-                printf("(%lld, %i) ", in.inputidx, in.offset);
+                printf("(%lld, %s) ", in.inputidx, in.pow == Power::LOW ? "LOW" : "HIGH");
             }
         }
         printf("\n");
@@ -54,12 +53,6 @@ void debug_system(System &sys) {
     for (i32 i = 0; i < 64; i++) {
         usize mask = pow(2, i);
         printf("%i", (sys.flip_states & mask) ? 1 : 0);
-    }
-    printf("\n");
-    printf("[CONJ STATES]:");
-    for (i32 i = 0; i < 64; i++) {
-        usize mask = pow(2, i);
-        printf("%i", (sys.conj_states & mask) ? 1 : 0);
     }
     printf("\n");
     printf("[FlipFlops]:\n");
@@ -86,7 +79,13 @@ void debug_system(System &sys) {
     }
 }
 
-enum Power { LOW, HIGH };
+bool check_conjunction(Module &conj) {
+    for (Input &in : conj.inputs) {
+        if (in.pow != Power::HIGH) { return false; }
+    }
+    return true;
+}
+
 struct Pulse {
     usize from;
     usize to;
@@ -142,19 +141,11 @@ usize part1(System &sys) {
             else if (mod.type == '&'){ // CONJUNCTION
                 for (Input &in : mod.inputs) {
                     if (in.inputidx == pulse.from) {
-                        usize mask = 1 << in.offset;
-                        if (pulse.pow == Power::LOW) {
-                            sys.conj_states ^= mask;
-                        }
-                        else if (pulse.pow == Power::HIGH) {
-                            sys.conj_states |= mask;
-                        }
+                        in.pow = pulse.pow;
                         break;
                     }
                 }
-                Power newpow = LOW;
-                if ((sys.conj_states & mod.mask) == mod.mask) newpow = Power::LOW;
-                else newpow = Power::HIGH;
+                Power newpow = check_conjunction(mod) ? Power::LOW : Power::HIGH;
                 for (usize idx : mod.outputs) {
                     stack.push_back({ pulse.to, idx, newpow });
                 }
@@ -209,7 +200,7 @@ void setup_links(System &sys) {
                 });
                 if (it != curr.outstr.end()) {
                     u8 offset = log2(conjmask);
-                    mod.inputs.push_back({ i, offset });
+                    mod.inputs.push_back({ i, Power::LOW });
                     mod.mask |= conjmask;
                     conjmask *= 2;
                     conjcount++;
@@ -237,7 +228,7 @@ int run(std::string *part1_out, std::string *part2_out) {
                 sys.modules.push_back({ name[0], &name[1], Parse::split_char(rest, ", "), {}, &sys.flip_states });
             }
             else if (name[0] == '&') {
-                sys.modules.push_back({ name[0], &name[1], Parse::split_char(rest, ", "), {}, &sys.conj_states });
+                sys.modules.push_back({ name[0], &name[1], Parse::split_char(rest, ", "), {}, nullptr });
             }
         }
     });
