@@ -102,57 +102,60 @@ usize part1(System &sys) {
     std::vector<Pulse> stack;
     stack.push_back({ INT_MAX, start, Power::LOW }); // BUTTON PUSHED
 
-    //usize current = 0;
-    //while (current < stack.size()) {
-    //    Pulse pulse = stack[current];
-    //    if (pulse.to >= sys.modules.size()) continue;
+    usize current = 0;
+    while (current < stack.size()) {
+        Pulse pulse = stack[current];
+        if (pulse.to >= sys.modules.size()) {
+            current++;
+            continue;
+        }
 
-    //    Module &mod = sys.modules[pulse.to];
-    //    if (mod.type == 'B') { // BCAST
-    //        for (usize idx : mod.outputs) {
-    //            stack.push_back({ pulse.to, idx, pulse.pow });
-    //        }
-    //    }
-    //    else if (mod.type == '%'){ // FLIPFLOP
-    //        if (pulse.pow == Power::LOW) {
-    //            bool ison = (sys.flip_states & mod.mask) == mod.mask;
-    //            sys.flip_states ^= mod.mask;
-    //            for (usize idx : mod.outputs) {
-    //                stack.push_back({ pulse.to, idx, ison ? LOW : HIGH });
-    //            }
-    //        }
-    //    }
-    //    else if (mod.type == '&'){ // CONJUNCTION
-    //        for (Input &in : mod.inputs) {
-    //            if (in.inputidx == pulse.from) {
-    //                usize mask = 1 << in.offset;
-    //                if (pulse.pow == Power::LOW) {
-    //                    sys.conj_states ^= mask;
-    //                }
-    //                else if (pulse.pow == Power::HIGH) {
-    //                    sys.conj_states |= mask;
-    //                }
-    //                break;
-    //            }
-    //        }
-    //        Power newpow = LOW;
-    //        if ((sys.conj_states & mod.mask) == mod.mask) newpow = Power::LOW;
-    //        else newpow = Power::HIGH;
-    //        for (usize idx : mod.outputs) {
-    //            stack.push_back({ pulse.to, idx, newpow });
-    //        }
-    //    }
+        Module &mod = sys.modules[pulse.to];
+        if (mod.type == 'B') { // BCAST
+            for (usize idx : mod.outputs) {
+                stack.push_back({ pulse.to, idx, pulse.pow });
+            }
+        }
+        else if (mod.type == '%'){ // FLIPFLOP
+            if (pulse.pow == Power::LOW) {
+                bool ison = (sys.flip_states & mod.mask) == mod.mask;
+                sys.flip_states ^= mod.mask;
+                for (usize idx : mod.outputs) {
+                    stack.push_back({ pulse.to, idx, ison ? LOW : HIGH });
+                }
+            }
+        }
+        else if (mod.type == '&'){ // CONJUNCTION
+            for (Input &in : mod.inputs) {
+                if (in.inputidx == pulse.from) {
+                    usize mask = 1 << in.offset;
+                    if (pulse.pow == Power::LOW) {
+                        sys.conj_states ^= mask;
+                    }
+                    else if (pulse.pow == Power::HIGH) {
+                        sys.conj_states |= mask;
+                    }
+                    break;
+                }
+            }
+            Power newpow = LOW;
+            if ((sys.conj_states & mod.mask) == mod.mask) newpow = Power::LOW;
+            else newpow = Power::HIGH;
+            for (usize idx : mod.outputs) {
+                stack.push_back({ pulse.to, idx, newpow });
+            }
+        }
 
-    //    if (pulse.pow == Power::LOW) lo_count++;
-    //    else if (pulse.pow == Power::HIGH) hi_count++;
+        if (pulse.pow == Power::LOW) lo_count++;
+        else if (pulse.pow == Power::HIGH) hi_count++;
 
-    //    current++;
-    //}
+        current++;
+    }
 
-    //printf("PULSES:\n");
-    //for (Pulse &p : stack) {
-    //    printf("(%lld) -%s-> (%lld)\n", p.from, p.pow == Power::HIGH ? "HIGH" : "LOW", p.to);
-    //}
+    printf("PULSES:\n");
+    for (Pulse &p : stack) {
+        printf("(%lld) -%s-> (%lld)\n", p.from, p.pow == Power::HIGH ? "HIGH" : "LOW", p.to);
+    }
 
     debug_system(sys);
     printf("lo_count=%lld; hi_count=%lld:\n", lo_count, hi_count);
