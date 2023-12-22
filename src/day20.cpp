@@ -7,7 +7,7 @@ namespace Solution {
 
 #define DEMO 1
 #if DEMO == 1 // ------------------------------------
-#define FILE_PATH ".\\inputs\\day20_demo1.txt"
+#define FILE_PATH ".\\inputs\\day20_demo2.txt"
 #else // ------------------------------------
 #define FILE_PATH ".\\inputs\\day20.txt"
 #endif // ------------------------------------
@@ -19,7 +19,7 @@ struct Input {
 struct Module {
     char type;
     char *name;
-    char *rest; // Staging before filling in
+    std::vector<char*> outstr;
     std::vector<usize> outputs;
 
     usize *state;
@@ -93,20 +93,69 @@ struct Pulse {
 };
 
 usize part1(System &sys) {
-    usize lo_count = 1; // Starts at 1 to consider button press
+    usize lo_count = 0;
     usize hi_count = 0;
 
-    debug_system(sys);
     const auto pred = [](Module &in){ return in.type == 'B'; };
     usize start = std::distance(sys.modules.begin(), std::find_if(sys.modules.begin(), sys.modules.end(), pred));
 
     std::vector<Pulse> stack;
-    usize current = 0;
-    while (current < stack.size()) {
-        Pulse &pulse = stack[current];
-        //TODO: Process current pulse
-        current++;
-    }
+    stack.push_back({ INT_MAX, start, Power::LOW }); // BUTTON PUSHED
+
+    //usize current = 0;
+    //while (current < stack.size()) {
+    //    Pulse pulse = stack[current];
+    //    if (pulse.to >= sys.modules.size()) continue;
+
+    //    Module &mod = sys.modules[pulse.to];
+    //    if (mod.type == 'B') { // BCAST
+    //        for (usize idx : mod.outputs) {
+    //            stack.push_back({ pulse.to, idx, pulse.pow });
+    //        }
+    //    }
+    //    else if (mod.type == '%'){ // FLIPFLOP
+    //        if (pulse.pow == Power::LOW) {
+    //            bool ison = (sys.flip_states & mod.mask) == mod.mask;
+    //            sys.flip_states ^= mod.mask;
+    //            for (usize idx : mod.outputs) {
+    //                stack.push_back({ pulse.to, idx, ison ? LOW : HIGH });
+    //            }
+    //        }
+    //    }
+    //    else if (mod.type == '&'){ // CONJUNCTION
+    //        for (Input &in : mod.inputs) {
+    //            if (in.inputidx == pulse.from) {
+    //                usize mask = 1 << in.offset;
+    //                if (pulse.pow == Power::LOW) {
+    //                    sys.conj_states ^= mask;
+    //                }
+    //                else if (pulse.pow == Power::HIGH) {
+    //                    sys.conj_states |= mask;
+    //                }
+    //                break;
+    //            }
+    //        }
+    //        Power newpow = LOW;
+    //        if ((sys.conj_states & mod.mask) == mod.mask) newpow = Power::LOW;
+    //        else newpow = Power::HIGH;
+    //        for (usize idx : mod.outputs) {
+    //            stack.push_back({ pulse.to, idx, newpow });
+    //        }
+    //    }
+
+    //    if (pulse.pow == Power::LOW) lo_count++;
+    //    else if (pulse.pow == Power::HIGH) hi_count++;
+
+    //    current++;
+    //}
+
+    //printf("PULSES:\n");
+    //for (Pulse &p : stack) {
+    //    printf("(%lld) -%s-> (%lld)\n", p.from, p.pow == Power::HIGH ? "HIGH" : "LOW", p.to);
+    //}
+
+    debug_system(sys);
+    printf("lo_count=%lld; hi_count=%lld:\n", lo_count, hi_count);
     return lo_count * hi_count;
 }
 
@@ -115,13 +164,11 @@ std::string part2() {
 }
 
 void setup_links(System &sys) {
-    //TODO: Here we search and connect modules together (save indices)
     usize flipmask = 1;
     usize conjmask = 1;
 
     for (Module &mod : sys.modules) {
-        std::vector<char*> elems = Parse::split_char(mod.rest, ", ");
-        for (char *e : elems) {
+        for (char *e : mod.outstr) {
             const auto it = std::find_if(sys.modules.begin(), sys.modules.end(), [&e](Module &in){
                 return strcmp(e, in.name) == 0;
             });
@@ -134,7 +181,11 @@ void setup_links(System &sys) {
         }
         else if (mod.type == '&') {
             for (usize i = 0; i < sys.modules.size(); i++) {
-                if (strstr(sys.modules[i].rest, mod.name) != nullptr) {
+                const Module &curr = sys.modules[i];
+                auto it = std::find_if(curr.outstr.begin(), curr.outstr.end(), [&mod](char *out){
+                    return strcmp(mod.name, out) == 0;
+                });
+                if (it != curr.outstr.end()) {
                     u8 offset = log2(conjmask);
                     mod.inputs.push_back({ i, offset });
                     mod.mask |= conjmask;
@@ -154,13 +205,13 @@ int run(std::string *part1_out, std::string *part2_out) {
         Parse::split_once(token, " -> ", &name, &rest);
 
         if (strcmp(name, "broadcaster") == 0) {
-            sys.modules.push_back({ 'B', name, rest });
+            sys.modules.push_back({ 'B', name, Parse::split_char(rest, ", ") });
         } else {
             if (name[0] == '%') {
-                sys.modules.push_back({ name[0], &name[1], rest, {}, &sys.flip_states });
+                sys.modules.push_back({ name[0], &name[1], Parse::split_char(rest, ", "), {}, &sys.flip_states });
             }
             else if (name[0] == '&') {
-                sys.modules.push_back({ name[0], &name[1], rest, {}, &sys.conj_states });
+                sys.modules.push_back({ name[0], &name[1], Parse::split_char(rest, ", "), {}, &sys.conj_states });
             }
         }
     });
