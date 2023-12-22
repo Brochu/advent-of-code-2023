@@ -2,10 +2,11 @@
 #include "parsing.h"
 
 #include <span>
+#include <iostream>
 
 namespace Solution {
 
-#define DEMO 1
+#define DEMO 0
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day20_demo2.txt"
 #else // ------------------------------------
@@ -76,7 +77,7 @@ void debug_system(System &sys) {
     for (Module &mod : sys.modules) {
         if (mod.type == '%' || mod.type == 'B') continue;
 
-        printf("['%s'STATES]:", mod.name);
+        printf("['%s'  STATES]:", mod.name);
         for (i32 i = 0; i < 64; i++) {
             usize mask = pow(2, i);
             printf("%i", (mod.mask & mask) ? 1 : 0);
@@ -93,10 +94,10 @@ struct Pulse {
 };
 
 struct CacheEntry {
-    std::tuple<usize, usize> key;
+    usize key;
     usize lo_pulses;
     usize hi_pulses;
-    std::tuple<usize, usize> out;
+    usize out;
 };
 
 usize part1(System &sys) {
@@ -105,23 +106,10 @@ usize part1(System &sys) {
 
     const auto pred = [](Module &in){ return in.type == 'B'; };
     usize start = std::distance(sys.modules.begin(), std::find_if(sys.modules.begin(), sys.modules.end(), pred));
-    std::vector<CacheEntry> cache;
 
     for (i32 i = 0; i < 1000; i++) {
         usize lo_count = 0;
         usize hi_count = 0;
-        auto it = std::find_if(cache.begin(), cache.end(), [&sys](CacheEntry &in){
-            return in.key == std::tuple<usize, usize> { sys.flip_states, sys.conj_states };
-        });
-        if (it != cache.end()) {
-            printf("[CACHED] lo_pulses=%lld, hi_pulses=%lld\n", it->lo_pulses, it->hi_pulses);
-            lo_total += it->lo_pulses;
-            hi_total += it->hi_pulses;
-            sys.flip_states = std::get<0>(it->out);
-            sys.conj_states = std::get<1>(it->out);
-            continue;
-        }
-        std::tuple<usize, usize> key { sys.flip_states, sys.conj_states };
 
         std::vector<Pulse> stack;
         stack.push_back({ INT_MAX, start, Power::LOW }); // BUTTON PUSHED
@@ -174,17 +162,15 @@ usize part1(System &sys) {
             current++;
         }
 
-        printf("PULSES:\n");
-        for (Pulse &p : stack) {
-            printf("(%lld) -%s-> (%lld)\n", p.from, p.pow == Power::HIGH ? "HIGH" : "LOW", p.to);
-        }
+        //printf("PULSES:\n");
+        //for (Pulse &p : stack) {
+        //    printf("(%lld) -%s-> (%lld)\n", p.from, p.pow == Power::HIGH ? "HIGH" : "LOW", p.to);
+        //}
 
-        debug_system(sys);
+        //debug_system(sys);
         lo_total += lo_count;
         hi_total += hi_count;
-        cache.push_back({ key, lo_count, hi_count, {sys.flip_states, sys.conj_states} });
-        printf("[CACHING] (%lld, %lld) -> lo_count=%lld; hi_count=%lld:\n",
-               std::get<0>(key), std::get<1>(key), lo_count, hi_count);
+        //std::cin.ignore(1);
     }
     printf("lo_total=%lld; hi_total=%lld:\n", lo_total, hi_total);
     return lo_total * hi_total;
@@ -195,6 +181,10 @@ std::string part2() {
 }
 
 void setup_links(System &sys) {
+    usize flipcount = 0;
+    usize conjcount = 0;
+    usize inpcount = 0;
+
     usize flipmask = 1;
     usize conjmask = 1;
 
@@ -209,6 +199,7 @@ void setup_links(System &sys) {
         if (mod.type == '%') {
             mod.mask = flipmask;
             flipmask *= 2;
+            flipcount++;
         }
         else if (mod.type == '&') {
             for (usize i = 0; i < sys.modules.size(); i++) {
@@ -221,10 +212,14 @@ void setup_links(System &sys) {
                     mod.inputs.push_back({ i, offset });
                     mod.mask |= conjmask;
                     conjmask *= 2;
+                    conjcount++;
+                    inpcount += curr.outstr.size();
                 }
             }
         }
     }
+
+    printf("FLIP: %lld; CONJ: %lld; INPUT: %lld\n", flipcount, conjcount, inpcount);
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
