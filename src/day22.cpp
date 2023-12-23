@@ -12,20 +12,20 @@ namespace Solution {
 #define FILE_PATH ".\\inputs\\day22.txt"
 #endif // ------------------------------------
 
-std::string part1() {
-    return "NotCompleted";
+usize part1() {
+    return 0;
 }
 
-std::string part2() {
-    return "NotCompleted";
+usize part2() {
+    return 0;
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
     std::string in = INCLUDE_STR(FILE_PATH);
-    printf("%s\n", in.c_str());
+    printf("%s", in.c_str());
 
-    *part1_out = part1();
-    *part2_out = part2();
+    *part1_out = std::to_string(part1());
+    *part2_out = std::to_string(part2());
 
     return 0;
 }
