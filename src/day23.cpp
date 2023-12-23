@@ -1,6 +1,7 @@
 #include "day.h"
 #include "parsing.h"
 
+#include <queue>
 #include <span>
 
 namespace Solution {
@@ -14,6 +15,7 @@ namespace Solution {
 #define MAP_SIZE 141
 #endif // ------------------------------------
 
+//TODO: Remember this
 enum Cell {
     Path = '.',
     Tree = '#',
@@ -21,6 +23,10 @@ enum Cell {
     Left = '<',
     Right= '>',
     Down = 'v',
+};
+struct Pos {
+    i32 x;
+    i32 y;
 };
 struct Map {
     std::vector<Cell> cells;
@@ -34,9 +40,40 @@ void debug_map(Map &map) {
         printf("\n");
     }
 }
+std::vector<Pos> fetch_map(Map &map, Pos p) {
+    std::vector<Pos> result;
+    //TODO: Add restrictions
+    // TREES
+    // FORCED DIRS
+    result.push_back({ p.x, p.y - 1 });
+    result.push_back({ p.x - 1, p.y });
+    result.push_back({ p.x + 1, p.y });
+    result.push_back({ p.x, p.y + 1 });
+    return result;
+}
+
+struct State {
+    u32 dist;
+    Pos pos;
+};
 
 usize part1(Map &map) {
     debug_map(map);
+    auto cmp = [](State &left, State &right){ return left.dist > right.dist; };
+    std::priority_queue<State, std::vector<State>, decltype(cmp)> Q(cmp);
+    Q.push({ 32, {0, 0} });
+    Q.push({ 45, {1, 0} });
+    Q.push({ 24, {2, 0} });
+    Q.push({ 39, {3, 0} });
+    Q.push({ 55, {4, 0} });
+
+    while (!Q.empty()) {
+        State current = Q.top();
+        Q.pop();
+
+        printf("[ELEM] [%i] (%i, %i)\n", current.dist, current.pos.x, current.pos.y);
+    }
+
     return 0;
 }
 
