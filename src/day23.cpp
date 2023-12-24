@@ -59,19 +59,39 @@ struct State {
 
 usize part1(Map &map) {
     debug_map(map);
-    auto cmp = [](State &left, State &right){ return left.dist > right.dist; };
+    // Create MAX heap
+    auto cmp = [](State &left, State &right){ return left.dist < right.dist; };
     std::priority_queue<State, std::vector<State>, decltype(cmp)> Q(cmp);
-    Q.push({ 32, {0, 0} });
-    Q.push({ 45, {1, 0} });
-    Q.push({ 24, {2, 0} });
-    Q.push({ 39, {3, 0} });
-    Q.push({ 55, {4, 0} });
+    Q.push({ 0, {1, 0} });
+
+    u32 dist[MAP_SIZE * MAP_SIZE];
+    bool visited[MAP_SIZE * MAP_SIZE];
+    for (i32 i = 0; i < MAP_SIZE * MAP_SIZE; i++) {
+        dist[i] = 0;
+        visited[i] = (map.cells[i] == Cell::Tree) ? true : false;
+    }
 
     while (!Q.empty()) {
         State current = Q.top();
         Q.pop();
 
         printf("[ELEM] [%i] (%i, %i)\n", current.dist, current.pos.x, current.pos.y);
+        const usize offset = current.pos.y * MAP_SIZE + current.pos.x;
+        if (map.cells[offset] == Cell::Up) {
+            // Stack the only possible next step
+        }
+        else if (map.cells[offset] == Cell::Left) {
+            // Stack the only possible next step
+        }
+        else if (map.cells[offset] == Cell::Right) {
+            // Stack the only possible next step
+        }
+        else if (map.cells[offset] == Cell::Down) {
+            // Stack the only possible next step
+        }
+        else {
+            // Find all possible next steps, skip trees
+        }
     }
 
     return 0;
