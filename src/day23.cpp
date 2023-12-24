@@ -28,27 +28,40 @@ struct Pos {
     i32 x;
     i32 y;
 };
+Pos operator+(const Pos &left, const Pos &right) { return {left.x + right.x, left.y + right.y}; }
+
 struct Map {
     std::vector<Cell> cells;
 };
-void debug_map(Map &map) {
+void debug_map(Map &map, Pos &start, Pos &end) {
     for (i32 i = 0; i < MAP_SIZE; i++) {
         for (i32 j = 0; j < MAP_SIZE; j++) {
-            const usize offset = i * MAP_SIZE + j;
-            printf("%c", map.cells[offset]);
+            if (start.x == j && start.y == i) printf("O");
+            else if (end.x == j && end.y == i) printf("X");
+            else {
+                printf("%c", map.cells[i * MAP_SIZE + j]);
+            }
         }
         printf("\n");
     }
 }
-std::vector<Pos> fetch_map(Map &map, Pos p) {
+bool is_valid(Pos &pos) { return pos.x >= 0 && pos.x < MAP_SIZE && pos.y >= 0 && pos.y < MAP_SIZE; }
+std::vector<Pos> fetch_map(Map &map, const bool *visited, Pos &p) {
+    Pos deltas[4] {
+        {  0, -1 },
+        { -1,  0 },
+        {  1,  0 },
+        {  0,  1 },
+    };
     std::vector<Pos> result;
-    //TODO: Add restrictions
-    // TREES
-    // FORCED DIRS
-    result.push_back({ p.x, p.y - 1 });
-    result.push_back({ p.x - 1, p.y });
-    result.push_back({ p.x + 1, p.y });
-    result.push_back({ p.x, p.y + 1 });
+    for (Pos &delta : deltas) {
+        Pos pos = p + delta;
+        const usize offset = pos.y * MAP_SIZE + pos.x;
+
+        if (is_valid(pos) && !visited[offset]) {
+            result.push_back(pos);
+        }
+    }
     return result;
 }
 
@@ -58,11 +71,14 @@ struct State {
 };
 
 usize part1(Map &map) {
-    debug_map(map);
+    Pos src { 1, 0 };
+    Pos dst { MAP_SIZE - 2, MAP_SIZE - 1 };
+    debug_map(map, src, dst);
+
     // Create MAX heap
     auto cmp = [](State &left, State &right){ return left.dist < right.dist; };
     std::priority_queue<State, std::vector<State>, decltype(cmp)> Q(cmp);
-    Q.push({ 0, {1, 0} });
+    Q.push({ 0, src });
 
     u32 dist[MAP_SIZE * MAP_SIZE];
     bool visited[MAP_SIZE * MAP_SIZE];
@@ -75,22 +91,18 @@ usize part1(Map &map) {
         State current = Q.top();
         Q.pop();
 
-        printf("[ELEM] [%i] (%i, %i)\n", current.dist, current.pos.x, current.pos.y);
-        const usize offset = current.pos.y * MAP_SIZE + current.pos.x;
-        if (map.cells[offset] == Cell::Up) {
-            // Stack the only possible next step
+        const usize coff = current.pos.y * MAP_SIZE + current.pos.x;
+        visited[coff] = true;
+
+        if (current.pos.x == dst.x && current.pos.y == dst.y) {
+            // Found destination cell
+            return dist[current.pos.y * MAP_SIZE + current.pos.x];
         }
-        else if (map.cells[offset] == Cell::Left) {
-            // Stack the only possible next step
-        }
-        else if (map.cells[offset] == Cell::Right) {
-            // Stack the only possible next step
-        }
-        else if (map.cells[offset] == Cell::Down) {
-            // Stack the only possible next step
-        }
-        else {
-            // Find all possible next steps, skip trees
+
+        printf("[CURR] [%i] (%i, %i)\n", current.dist, current.pos.x, current.pos.y);
+        for (Pos &n : fetch_map(map, visited, current.pos)) {
+            const usize noff = n.y * MAP_SIZE + n.x;
+            printf("[N] [%i] (%i, %i)\n", dist[noff], n.x, n.y);
         }
     }
 
