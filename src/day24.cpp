@@ -76,7 +76,12 @@ usize part1(std::span<Line> hail) {
     return count;
 }
 
-usize part2() {
+usize part2(std::span<Line> hail) {
+    //TODO: Find start pos / velocity for a stone to collide with all lines
+    // Maybe multiple states
+    // One state per line
+    // for state i, represents a stone that hits line i first
+    // maybe depth first search of which order works
     return 0;
 }
 
@@ -92,7 +97,7 @@ int run(std::string *part1_out, std::string *part2_out) {
     });
 
     *part1_out = std::to_string(part1(hail));
-    *part2_out = std::to_string(part2());
+    *part2_out = std::to_string(part2(hail));
 
     return 0;
 }
