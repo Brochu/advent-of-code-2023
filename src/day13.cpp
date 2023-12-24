@@ -5,7 +5,7 @@
 
 namespace Solution {
 
-#define DEMO 0
+#define DEMO 1
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day13_demo1.txt"
 #else // ------------------------------------
@@ -16,8 +16,6 @@ struct Pattern {
     std::string data;
     usize height;
     usize width;
-    i32 vfound = -1;
-    i32 hfound = -1;
 };
 void debug_patterns(std::span<Pattern> pats) {
     for (Pattern &p : pats) {
@@ -29,7 +27,11 @@ void debug_patterns(std::span<Pattern> pats) {
     }
 }
 
-bool find_vertical(Pattern &p, usize &pos) {
+bool possible_match(u32 a, u32 b, bool part2 = false) {
+    return a == b;
+}
+
+bool find_vertical(Pattern &p, usize &pos, bool part2 = false) {
     u32 cols[p.width];
 
     bool found = false;
@@ -43,14 +45,14 @@ bool find_vertical(Pattern &p, usize &pos) {
         //printf("Total = %i\n", val);
         cols[i] = val;
 
-        if (i > 0 && !found && cols[i] == cols[i - 1]) {
+        if (i > 0 && !found && possible_match(cols[i], cols[i - 1])) {
             //printf("Possible reflections line\n");
             found = !found;
             pos = i;
             mirror = i - 1;
             if (mirror == 0) return true;
         }
-        else if (found && cols[i] != cols[--mirror]) {
+        else if (found && !possible_match(cols[i], cols[--mirror])) {
             found = !found;
         }
         else if (found && mirror == 0) {
@@ -59,7 +61,7 @@ bool find_vertical(Pattern &p, usize &pos) {
     }
     return found;
 }
-bool find_horizontal(Pattern &p, usize &pos) {
+bool find_horizontal(Pattern &p, usize &pos, bool part2 = false) {
     u32 rows[p.height];
 
     bool found = false;
@@ -96,11 +98,9 @@ std::string part1(std::span<Pattern> pats) {
         usize pos = 0;
         if (find_vertical(p, pos)) {
             total += pos;
-            p.vfound = pos;
         }
         else if (find_horizontal(p, pos)) {
             total += (pos * 100);
-            p.hfound = pos;
         }
         else {
             printf("[ERR] Could not find a reflection...\n");
@@ -112,22 +112,17 @@ std::string part1(std::span<Pattern> pats) {
 
 std::string part2(std::span<Pattern> pats) {
     usize total = 0;
-    //Pattern &p = pats[0]; {
     for (Pattern &p : pats) {
-        for (i32 i = 0; i < p.width * p.height; i++) {
-            p.data[i] = p.data[i] == '#' ? '.' : '#';
-
-            usize pos = 0;
-            if (find_vertical(p, pos) && pos != p.vfound) {
-                total += pos;
-                break;
-            }
-            else if (find_horizontal(p, pos) && pos != p.hfound) {
-                total += (pos * 100);
-                break;
-            }
-
-            p.data[i] = p.data[i] == '#' ? '.' : '#';
+        usize pos = 0;
+        if (find_vertical(p, pos)) {
+            total += pos;
+        }
+        else if (find_horizontal(p, pos)) {
+            total += (pos * 100);
+        }
+        else {
+            printf("[ERR] Could not find a reflection...\n");
+            debug_patterns({ &p, 1});
         }
     }
     return std::to_string(total);
