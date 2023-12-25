@@ -18,6 +18,7 @@ struct Component {
 };
 struct Machine {
     std::vector<Component> cmps;
+    bool **mat;
 };
 
 usize part1(Machine &m) {
