@@ -21,8 +21,6 @@ usize part1(Machine &m) {
     for (char *name : m.names) {
         printf(" - '%s'\n", name);
     }
-    //auto it = std::find(m.names.begin(), m.names.end(), "lsr");
-    //printf(" Found 'lsr' at %s\n", *it);
     return 0;
 }
 
