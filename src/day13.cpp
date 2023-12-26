@@ -27,12 +27,24 @@ void debug_patterns(std::span<Pattern> pats) {
     }
 }
 
-bool possible_match(u32 a, u32 b, bool part2 = false) {
-    return a == b;
+bool possible_match(u32 a, u32 b, u32 tol = 0) {
+    if (tol == 0) {
+        return a == b;
+    } else {
+        auto is_pow_2 = [](u32 n){
+            return n != 0 && ((n & (n-1)) == 0);
+        };
+        if (is_pow_2(a ^ b)) {
+            tol--;
+            return true;
+        }
+        return a == b;
+    }
 }
 
 bool find_vertical(Pattern &p, usize &pos, bool part2 = false) {
     u32 cols[p.width];
+    u32 tol = part2 ? 1 : 0;
 
     bool found = false;
     usize mirror = 0;
@@ -45,14 +57,14 @@ bool find_vertical(Pattern &p, usize &pos, bool part2 = false) {
         //printf("Total = %i\n", val);
         cols[i] = val;
 
-        if (i > 0 && !found && possible_match(cols[i], cols[i - 1])) {
+        if (i > 0 && !found && possible_match(cols[i], cols[i - 1], tol)) {
             //printf("Possible reflections line\n");
             found = !found;
             pos = i;
             mirror = i - 1;
             if (mirror == 0) return true;
         }
-        else if (found && !possible_match(cols[i], cols[--mirror])) {
+        else if (found && !possible_match(cols[i], cols[--mirror], tol)) {
             found = !found;
         }
         else if (found && mirror == 0) {
@@ -63,6 +75,7 @@ bool find_vertical(Pattern &p, usize &pos, bool part2 = false) {
 }
 bool find_horizontal(Pattern &p, usize &pos, bool part2 = false) {
     u32 rows[p.height];
+    u32 tol = part2 ? 1 : 0;
 
     bool found = false;
     usize mirror = 0;
@@ -75,14 +88,14 @@ bool find_horizontal(Pattern &p, usize &pos, bool part2 = false) {
         //printf("Total = %i\n", val);
         rows[i] = val;
 
-        if (i > 0 && !found && rows[i] == rows[i - 1]) {
+        if (i > 0 && !found && possible_match(rows[i], rows[i - 1], tol)) {
             //printf("Possible reflections line\n");
             found = !found;
             pos = i;
             mirror = i - 1;
             if (mirror == 0) return true;
         }
-        else if (found && rows[i] != rows[--mirror]) {
+        else if (found && !possible_match(rows[i], rows[--mirror], tol)) {
             found = !found;
         }
         else if (found && mirror == 0) {
@@ -114,10 +127,10 @@ std::string part2(std::span<Pattern> pats) {
     usize total = 0;
     for (Pattern &p : pats) {
         usize pos = 0;
-        if (find_vertical(p, pos)) {
+        if (find_vertical(p, pos, true)) {
             total += pos;
         }
-        else if (find_horizontal(p, pos)) {
+        else if (find_horizontal(p, pos, true)) {
             total += (pos * 100);
         }
         else {
