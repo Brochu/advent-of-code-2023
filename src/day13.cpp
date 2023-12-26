@@ -13,107 +13,56 @@ namespace Solution {
 #endif // ------------------------------------
 
 struct Pattern {
-    std::string data;
-    usize height;
-    usize width;
+    std::vector<std::string> rows;
+    std::vector<std::string> cols;
 };
 void debug_patterns(std::span<Pattern> pats) {
     for (Pattern &p : pats) {
-        for (usize i = 0; i < p.height; i++) {
-            for (usize j = 0; j < p.width; j++) { printf("%c", p.data[j + (i * p.width)]); }
-            printf("\n");
+        for (std::string & r : p.rows) {
+            printf("%s\n", r.c_str());
         }
-        printf("------------\n");
+        printf("------------------\n");
+        for (std::string & c : p.cols) {
+            printf("%s\n", c.c_str());
+        }
+        printf("==================\n");
     }
 }
 
-bool possible_match(u32 a, u32 b, u32 tol = 0) {
-    if (tol == 0) {
-        return a == b;
+bool check_lines(std::string &s0, std::string &s1, u32 tolerence = 0) {
+    if (tolerence == 0) {
+        return s0 == s1;
     } else {
-        auto is_pow_2 = [](u32 n){
-            return n != 0 && ((n & (n-1)) == 0);
-        };
-        if (is_pow_2(a ^ b)) {
-            tol--;
-            return true;
-        }
-        return a == b;
+        //TODO: Add details here for part 2
+        return false;
     }
 }
 
-bool find_vertical(Pattern &p, usize &pos, bool part2 = false) {
-    u32 cols[p.width];
-    u32 tol = part2 ? 1 : 0;
+bool find_reflection(Pattern &p, usize &vpos, usize &hpos) {
+    vpos = 0;
+    hpos = 0;
 
-    bool found = false;
-    usize mirror = 0;
-    for (u32 i = 0; i < p.width; i++) {
-        u32 val = 0;
-        for (u32 j = 0; j < p.height; j++) {
-            val <<= 1;
-            if (p.data[i + (j * p.width)] == '#') { val++; };
-        }
-        //printf("Total = %i\n", val);
-        cols[i] = val;
+    for (i32 i = 1; i < p.rows.size(); i++) {
+        std::string &l0 = p.rows[i-1];
+        std::string &l1 = p.rows[i];
 
-        if (i > 0 && !found && possible_match(cols[i], cols[i - 1], tol)) {
-            //printf("Possible reflections line\n");
-            found = !found;
-            pos = i;
-            mirror = i - 1;
-            if (mirror == 0) return true;
-        }
-        else if (found && !possible_match(cols[i], cols[--mirror], tol)) {
-            found = !found;
-        }
-        else if (found && mirror == 0) {
-            break;
-        }
+        printf("%s\n%s\nequals=%s\n\n", l0.c_str(), l1.c_str(), check_lines(l0, l1) ? "YES" : "NO");
+        //TODO: if we match, need to check if match correspond to a reflection line
     }
-    return found;
-}
-bool find_horizontal(Pattern &p, usize &pos, bool part2 = false) {
-    u32 rows[p.height];
-    u32 tol = part2 ? 1 : 0;
 
-    bool found = false;
-    usize mirror = 0;
-    for (u32 i = 0; i < p.height; i++) {
-        u32 val = 0;
-        for (u32 j = 0; j < p.width; j++) {
-            val <<= 1;
-            if (p.data[j + (i * p.width)] == '#') { val++; };
-        }
-        //printf("Total = %i\n", val);
-        rows[i] = val;
-
-        if (i > 0 && !found && possible_match(rows[i], rows[i - 1], tol)) {
-            //printf("Possible reflections line\n");
-            found = !found;
-            pos = i;
-            mirror = i - 1;
-            if (mirror == 0) return true;
-        }
-        else if (found && !possible_match(rows[i], rows[--mirror], tol)) {
-            found = !found;
-        }
-        else if (found && mirror == 0) {
-            break;
-        }
-    }
-    return found;
+    //TODO: Need to repeat process for cols
+    return true;
 }
 
 std::string part1(std::span<Pattern> pats) {
     usize total = 0;
-    for (Pattern &p : pats) {
-        usize pos = 0;
-        if (find_vertical(p, pos)) {
-            total += pos;
-        }
-        else if (find_horizontal(p, pos)) {
-            total += (pos * 100);
+    Pattern &p = pats[0]; {
+    //for (Pattern &p : pats) {
+        usize vpos = 0;
+        usize hpos = 0;
+        if (find_reflection(p, vpos, hpos)) {
+            total += vpos;
+            total += (hpos * 100);
         }
         else {
             printf("[ERR] Could not find a reflection...\n");
@@ -125,19 +74,19 @@ std::string part1(std::span<Pattern> pats) {
 
 std::string part2(std::span<Pattern> pats) {
     usize total = 0;
-    for (Pattern &p : pats) {
-        usize pos = 0;
-        if (find_vertical(p, pos, true)) {
-            total += pos;
-        }
-        else if (find_horizontal(p, pos, true)) {
-            total += (pos * 100);
-        }
-        else {
-            printf("[ERR] Could not find a reflection...\n");
-            debug_patterns({ &p, 1});
-        }
-    }
+    //for (Pattern &p : pats) {
+    //    usize pos = 0;
+    //    if (find_vertical(p, pos, true)) {
+    //        total += pos;
+    //    }
+    //    else if (find_horizontal(p, pos, true)) {
+    //        total += (pos * 100);
+    //    }
+    //    else {
+    //        printf("[ERR] Could not find a reflection...\n");
+    //        debug_patterns({ &p, 1});
+    //    }
+    //}
     return std::to_string(total);
 }
 
@@ -148,9 +97,19 @@ int run(std::string *part1_out, std::string *part2_out) {
     std::vector<char*> blocks = Parse::split_str(std::move(in), "\n\n");
     for (char *b : blocks) {
         std::vector<char*> lines = Parse::split_char(b, "\n");
-        Pattern p { {}, lines.size(), strlen(lines[0]) };
-        for (char *l : lines) { p.data.append(l); }
-        patterns.push_back(p);
+        std::vector<std::string> rows;
+        for (i32 i = 0; i < lines.size(); i++) {
+            rows.push_back({ lines[i] });
+        }
+        std::vector<std::string> cols;
+        for (i32 i = 0; i < strlen(lines[0]); i++) {
+            std::string col;
+            for (i32 j = 0; j < lines.size(); j++) {
+                col += lines[j][i];
+            }
+            cols.push_back(col);
+        }
+        patterns.push_back({ rows, cols });
     }
 
     *part1_out = part1(patterns);
