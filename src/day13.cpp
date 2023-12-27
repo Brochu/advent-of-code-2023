@@ -15,6 +15,10 @@ namespace Solution {
 struct Pattern {
     std::vector<std::string> rows;
     std::vector<std::string> cols;
+
+    // Store positions found for reflections in part 1, so we can't repeat in part2?
+    usize vpos = 0;
+    usize hpos = 0;
 };
 void debug_patterns(std::span<Pattern> pats) {
     for (Pattern &p : pats) {
