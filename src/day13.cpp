@@ -51,7 +51,13 @@ bool find_reflection(Pattern &p, usize &vpos, usize &hpos) {
         std::string &l1 = p.rows[i];
 
         printf("%s\n%s\nequals=%s\n\n", l0.c_str(), l1.c_str(), check_lines(l0, l1) ? "YES" : "NO");
-        //TODO: if we match, need to check if match correspond to a reflection line
+        if (check_lines(l0, l1)) {
+            std::string n0 = p.rows[i-2];
+            std::string n1 = p.rows[i+1];
+            //TODO: These are the first two we check
+            // Cancel search only with no match
+            // If out of bounds, still good match
+        }
     }
 
     //TODO: Need to repeat process for cols
