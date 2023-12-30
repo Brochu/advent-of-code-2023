@@ -88,6 +88,8 @@ std::string part1(std::span<Pattern> pats) {
         if (find_reflection(p, vpos, hpos)) {
             total += vpos;
             total += (hpos * 100);
+            p.vpos = vpos;
+            p.hpos = hpos;
         }
         else {
             printf("[ERR] Could not find a reflection...\n");
@@ -100,6 +102,7 @@ std::string part1(std::span<Pattern> pats) {
 std::string part2(std::span<Pattern> pats) {
     usize total = 0;
     for (Pattern &curr : pats) {
+        //printf("vpos=%lld; hpos=%lld\n", curr.vpos, curr.hpos);
         for (i32 i = 0; i < curr.rows.size() * curr.cols.size(); i++) {
             Pattern p = curr;
             const i32 x = i / p.cols.size();
@@ -112,7 +115,10 @@ std::string part2(std::span<Pattern> pats) {
             usize vpos = 0;
             usize hpos = 0;
             if (find_reflection(p, vpos, hpos)) {
-                printf("Found reflection. vpos=%lld; hpos=%lld\n", vpos, hpos);
+                if ((p.vpos > 0 && vpos == p.vpos) || (p.hpos > 0 && hpos == p.hpos)) {
+                    continue;
+                }
+                //printf("Found reflection. vpos=%lld; hpos=%lld\n", vpos, hpos);
                 total += vpos;
                 total += (hpos * 100);
                 break;
