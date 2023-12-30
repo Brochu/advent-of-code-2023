@@ -5,7 +5,7 @@
 
 namespace Solution {
 
-#define DEMO 1
+#define DEMO 0
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day13_demo1.txt"
 #else // ------------------------------------
@@ -42,6 +42,20 @@ bool check_lines(std::string &s0, std::string &s1, u32 tolerence = 0) {
     }
 }
 
+bool validate_refl(std::vector<std::string> &ref, usize start) {
+    i32 lo = start - 2;
+    i32 hi = start + 1;
+
+    while (lo >= 0 && hi < ref.size()) {
+        if (!check_lines(ref[lo], ref[hi])) {
+            return false;
+        }
+        lo--;
+        hi++;
+    }
+    return true;
+}
+
 bool find_reflection(Pattern &p, usize &vpos, usize &hpos) {
     vpos = 0;
     hpos = 0;
@@ -50,24 +64,29 @@ bool find_reflection(Pattern &p, usize &vpos, usize &hpos) {
         std::string &l0 = p.rows[i-1];
         std::string &l1 = p.rows[i];
 
-        printf("%s\n%s\nequals=%s\n\n", l0.c_str(), l1.c_str(), check_lines(l0, l1) ? "YES" : "NO");
-        if (check_lines(l0, l1)) {
-            std::string n0 = p.rows[i-2];
-            std::string n1 = p.rows[i+1];
-            //TODO: These are the first two we check
-            // Cancel search only with no match
-            // If out of bounds, still good match
+        //printf("%s\n%s\nequals=%s\n\n", l0.c_str(), l1.c_str(), check_lines(l0, l1) ? "YES" : "NO");
+        if (check_lines(l0, l1) && validate_refl(p.rows, i)) {
+            hpos = i;
+            return true;
         }
     }
 
-    //TODO: Need to repeat process for cols
-    return true;
+    for (i32 i = 1; i < p.cols.size(); i++) {
+        std::string &l0 = p.cols[i-1];
+        std::string &l1 = p.cols[i];
+
+        //printf("%s\n%s\nequals=%s\n\n", l0.c_str(), l1.c_str(), check_lines(l0, l1) ? "YES" : "NO");
+        if (check_lines(l0, l1) && validate_refl(p.cols, i)) {
+            vpos = i;
+            return true;
+        }
+    }
+    return false;
 }
 
 std::string part1(std::span<Pattern> pats) {
     usize total = 0;
-    Pattern &p = pats[0]; {
-    //for (Pattern &p : pats) {
+    for (Pattern &p : pats) {
         usize vpos = 0;
         usize hpos = 0;
         if (find_reflection(p, vpos, hpos)) {
