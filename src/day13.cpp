@@ -5,7 +5,7 @@
 
 namespace Solution {
 
-#define DEMO 0
+#define DEMO 1
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day13_demo1.txt"
 #else // ------------------------------------
@@ -16,7 +16,6 @@ struct Pattern {
     std::vector<std::string> rows;
     std::vector<std::string> cols;
 
-    // Store positions found for reflections in part 1, so we can't repeat in part2?
     usize vpos = 0;
     usize hpos = 0;
 };
@@ -37,7 +36,6 @@ bool check_lines(std::string &s0, std::string &s1, u32 tolerence = 0) {
     if (tolerence == 0) {
         return s0 == s1;
     } else {
-        //TODO: Add details here for part 2
         return false;
     }
 }
@@ -64,7 +62,6 @@ bool find_reflection(Pattern &p, usize &vpos, usize &hpos) {
         std::string &l0 = p.rows[i-1];
         std::string &l1 = p.rows[i];
 
-        //printf("%s\n%s\nequals=%s\n\n", l0.c_str(), l1.c_str(), check_lines(l0, l1) ? "YES" : "NO");
         if (check_lines(l0, l1) && validate_refl(p.rows, i)) {
             hpos = i;
             return true;
@@ -75,7 +72,6 @@ bool find_reflection(Pattern &p, usize &vpos, usize &hpos) {
         std::string &l0 = p.cols[i-1];
         std::string &l1 = p.cols[i];
 
-        //printf("%s\n%s\nequals=%s\n\n", l0.c_str(), l1.c_str(), check_lines(l0, l1) ? "YES" : "NO");
         if (check_lines(l0, l1) && validate_refl(p.cols, i)) {
             vpos = i;
             return true;
@@ -103,19 +99,18 @@ std::string part1(std::span<Pattern> pats) {
 
 std::string part2(std::span<Pattern> pats) {
     usize total = 0;
-    //for (Pattern &p : pats) {
-    //    usize pos = 0;
-    //    if (find_vertical(p, pos, true)) {
-    //        total += pos;
-    //    }
-    //    else if (find_horizontal(p, pos, true)) {
-    //        total += (pos * 100);
-    //    }
-    //    else {
-    //        printf("[ERR] Could not find a reflection...\n");
-    //        debug_patterns({ &p, 1});
-    //    }
-    //}
+    for (Pattern &p : pats) {
+        usize vpos = 0;
+        usize hpos = 0;
+        if (find_reflection(p, vpos, hpos)) {
+            total += vpos;
+            total += (hpos * 100);
+        }
+        else {
+            printf("[ERR] Could not find a reflection...\n");
+            debug_patterns({ &p, 1});
+        }
+    }
     return std::to_string(total);
 }
 
