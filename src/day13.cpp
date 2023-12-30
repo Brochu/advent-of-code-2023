@@ -99,16 +99,24 @@ std::string part1(std::span<Pattern> pats) {
 
 std::string part2(std::span<Pattern> pats) {
     usize total = 0;
-    for (Pattern &p : pats) {
-        usize vpos = 0;
-        usize hpos = 0;
-        if (find_reflection(p, vpos, hpos)) {
-            total += vpos;
-            total += (hpos * 100);
-        }
-        else {
-            printf("[ERR] Could not find a reflection...\n");
-            debug_patterns({ &p, 1});
+    for (Pattern &curr : pats) {
+        for (i32 i = 0; i < curr.rows.size() * curr.cols.size(); i++) {
+            Pattern p = curr;
+            const i32 x = i / p.cols.size();
+            const i32 y = i % p.cols.size();
+            const char old = p.rows[x][y];
+
+            p.rows[x][y] = (old == '#') ? '.' : '#';
+            p.cols[y][x] = (old == '#') ? '.' : '#';
+
+            usize vpos = 0;
+            usize hpos = 0;
+            if (find_reflection(p, vpos, hpos)) {
+                printf("Found reflection. vpos=%lld; hpos=%lld\n", vpos, hpos);
+                total += vpos;
+                total += (hpos * 100);
+                break;
+            }
         }
     }
     return std::to_string(total);
