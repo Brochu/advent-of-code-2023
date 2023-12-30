@@ -12,6 +12,12 @@ namespace Solution {
 #define FILE_PATH ".\\inputs\\day14.txt"
 #endif // ------------------------------------
 
+void debug_map(std::span<std::string> lines) {
+    for (std::string &s : lines) {
+        printf("%s\n", s.c_str());
+    }
+}
+
 std::string part1(std::span<std::string> lines) {
     usize heightmap[lines[0].size()];
     for (i32 i = 0; i < lines[0].size(); i++) {
@@ -54,7 +60,27 @@ std::vector<std::string> rotate(std::span<std::string> lines) {
     return res;
 }
 
+void tilt(std::vector<std::string> &lines) {
+    for (i32 i = 1; i < lines.size(); i++) {
+        for (i32 j = 0; j < lines[i].size(); j++) {
+            if (lines[i][j] == 'O') {
+                i32 hi = i - 1;
+                printf("[START] %i (%i, %i)\n", hi, i, j);
+                while (hi > 0 && lines[hi][j] == '.') {
+                    printf("[WHILE] %i\n", hi);
+                    hi--;
+                }
+                printf("[DONE] %i\n", hi);
+            }
+        }
+    }
+}
+
 std::string part2(std::vector<std::string> lines) {
+    debug_map(lines);
+    tilt(lines);
+    printf("------------\n");
+    debug_map(lines);
     return "NotCompleted";
 }
 
