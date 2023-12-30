@@ -5,127 +5,83 @@
 
 namespace Solution {
 
-#define DEMO 1
+#define DEMO 0
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day13_demo1.txt"
 #else // ------------------------------------
 #define FILE_PATH ".\\inputs\\day13.txt"
 #endif // ------------------------------------
+#define SMUDGE_TARGET 1
 
-struct Pattern {
-    std::vector<std::string> rows;
-    std::vector<std::string> cols;
+typedef std::vector<std::string> Pattern;
 
-    usize vpos = 0;
-    usize hpos = 0;
-};
-void debug_patterns(std::span<Pattern> pats) {
+int countDifferingCharacters(const std::string& str1, const std::string& str2) {
+    int count = 0;
+    for (int i = 0; i < str1.length(); i++) {
+        if (str1[i] != str2[i]) {
+            count++;
+        }
+    }
+
+    return count;
+}
+
+int findMirror(std::vector<std::string> &group) {
+    for (int split = 1; split < group.size(); split++) {
+        int size = std::min(split, (int)group.size() - split);
+        
+        int smudgeCount = 0;
+        for (int y = 0; y < size; y++) {
+            std::string side1 = group[split - 1 - y];
+            std::string side2 = group[split + y];
+            smudgeCount += countDifferingCharacters(side1, side2);
+        }
+        if (smudgeCount == SMUDGE_TARGET) {
+            return split;
+        }
+    }
+    return 0;
+}
+
+std::vector<std::string> rotate(std::vector<std::string> &group) {
+    std::vector<std::string> ret;
+
+    int width = group[0].length();
+    for (int i = 0; i < width; i++) {
+        std::string s = "";
+
+        for (int j = 0; j < group.size(); j++) {
+            s += group[group.size() - j -1][i];
+        }
+        
+        ret.push_back(s);
+    }
+
+    return ret;
+}
+
+u64 getScore(std::vector<std::string> &group) {
+    u64 ret = findMirror(group) * 100;
+    std::vector<std::string> rotated = rotate(group);
+    ret += findMirror(rotated);
+
+    return ret;
+}
+
+u64 part1(std::span<Pattern> pats) {
+    u64 total = 0;
     for (Pattern &p : pats) {
-        for (std::string & r : p.rows) {
-            printf("%s\n", r.c_str());
-        }
-        printf("------------------\n");
-        for (std::string & c : p.cols) {
-            printf("%s\n", c.c_str());
-        }
-        printf("==================\n");
+        total += getScore(p);
     }
+    return total;
 }
 
-bool check_lines(std::string &s0, std::string &s1, u32 tolerence = 0) {
-    if (tolerence == 0) {
-        return s0 == s1;
-    } else {
-        return false;
-    }
-}
-
-bool validate_refl(std::vector<std::string> &ref, usize start) {
-    i32 lo = start - 2;
-    i32 hi = start + 1;
-
-    while (lo >= 0 && hi < ref.size()) {
-        if (!check_lines(ref[lo], ref[hi])) {
-            return false;
-        }
-        lo--;
-        hi++;
-    }
-    return true;
-}
-
-bool find_reflection(Pattern &p, usize &vpos, usize &hpos) {
-    vpos = 0;
-    hpos = 0;
-
-    for (i32 i = 1; i < p.rows.size(); i++) {
-        std::string &l0 = p.rows[i-1];
-        std::string &l1 = p.rows[i];
-
-        if (check_lines(l0, l1) && validate_refl(p.rows, i)) {
-            hpos = i;
-            return true;
-        }
-    }
-
-    for (i32 i = 1; i < p.cols.size(); i++) {
-        std::string &l0 = p.cols[i-1];
-        std::string &l1 = p.cols[i];
-
-        if (check_lines(l0, l1) && validate_refl(p.cols, i)) {
-            vpos = i;
-            return true;
-        }
-    }
-    return false;
-}
-
-std::string part1(std::span<Pattern> pats) {
-    usize total = 0;
+u64 part2(std::span<Pattern> pats) {
+    u64 total = 0;
     for (Pattern &p : pats) {
-        usize vpos = 0;
-        usize hpos = 0;
-        if (find_reflection(p, vpos, hpos)) {
-            total += vpos;
-            total += (hpos * 100);
-            p.vpos = vpos;
-            p.hpos = hpos;
-        }
-        else {
-            printf("[ERR] Could not find a reflection...\n");
-            debug_patterns({ &p, 1});
-        }
+        total += getScore(p);
     }
-    return std::to_string(total);
-}
-
-std::string part2(std::span<Pattern> pats) {
-    usize total = 0;
-    for (Pattern &curr : pats) {
-        //printf("vpos=%lld; hpos=%lld\n", curr.vpos, curr.hpos);
-        for (i32 i = 0; i < curr.rows.size() * curr.cols.size(); i++) {
-            Pattern p = curr;
-            const i32 x = i / p.cols.size();
-            const i32 y = i % p.cols.size();
-            const char old = p.rows[x][y];
-
-            p.rows[x][y] = (old == '#') ? '.' : '#';
-            p.cols[y][x] = (old == '#') ? '.' : '#';
-
-            usize vpos = 0;
-            usize hpos = 0;
-            if (find_reflection(p, vpos, hpos)) {
-                if ((p.vpos > 0 && vpos == p.vpos) || (p.hpos > 0 && hpos == p.hpos)) {
-                    continue;
-                }
-                //printf("Found reflection. vpos=%lld; hpos=%lld\n", vpos, hpos);
-                total += vpos;
-                total += (hpos * 100);
-                break;
-            }
-        }
-    }
-    return std::to_string(total);
+    return total;
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
@@ -139,19 +95,11 @@ int run(std::string *part1_out, std::string *part2_out) {
         for (i32 i = 0; i < lines.size(); i++) {
             rows.push_back({ lines[i] });
         }
-        std::vector<std::string> cols;
-        for (i32 i = 0; i < strlen(lines[0]); i++) {
-            std::string col;
-            for (i32 j = 0; j < lines.size(); j++) {
-                col += lines[j][i];
-            }
-            cols.push_back(col);
-        }
-        patterns.push_back({ rows, cols });
+        patterns.push_back(rows);
     }
 
-    *part1_out = part1(patterns);
-    *part2_out = part2(patterns);
+    *part1_out = std::to_string(part1(patterns));
+    *part2_out = std::to_string(part2(patterns));
 
     return 0;
 }
