@@ -11,6 +11,8 @@ namespace Solution {
 #else // ------------------------------------
 #define FILE_PATH ".\\inputs\\day14.txt"
 #endif // ------------------------------------
+//#define CYCLE_COUNT 3
+#define CYCLE_COUNT 1000000000
 
 void debug_map(std::span<std::string> lines) {
     for (std::string &s : lines) {
@@ -18,7 +20,7 @@ void debug_map(std::span<std::string> lines) {
     }
 }
 
-std::string part1(std::span<std::string> lines) {
+usize part1(std::span<std::string> lines) {
     usize heightmap[lines[0].size()];
     for (i32 i = 0; i < lines[0].size(); i++) {
         heightmap[i] = lines.size();
@@ -38,7 +40,7 @@ std::string part1(std::span<std::string> lines) {
             }
         }
     }
-    return std::to_string(total);
+    return total;
 }
 
 std::vector<std::string> rotate(std::span<std::string> lines) {
@@ -77,7 +79,9 @@ std::string part2(std::vector<std::string> lines) {
     u64 total = 0;
 
     debug_map(lines);
-    for (i32 i = 0; i < 3; i++) {
+    std::vector<std::vector<std::string>> cache;
+
+    for (i32 i = 0; i < CYCLE_COUNT; i++) {
         tilt(lines);
         lines = rotate(lines);
         tilt(lines);
@@ -86,11 +90,24 @@ std::string part2(std::vector<std::string> lines) {
         lines = rotate(lines);
         tilt(lines);
         lines = rotate(lines);
+
+        auto pred = [&lines](std::vector<std::string> &in){
+            for (i32 i = 0; i < in.size(); i++) {
+                if (in[i] != lines[i]) return false;
+            }
+            return true;
+        };
+        if (std::find_if(cache.begin(), cache.end(), pred) == cache.end()) {
+            cache.push_back(lines);
+        } else {
+            printf("Found cycle! At %i\n", i);
+            break;
+        }
     }
     printf("------------\n");
     debug_map(lines);
 
-    return std::to_string(total);
+    return std::to_string(part1(lines));
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
@@ -100,7 +117,7 @@ int run(std::string *part1_out, std::string *part2_out) {
         map.push_back({ token });
     });
 
-    *part1_out = part1(map);
+    *part1_out = std::to_string(part1(map));
     *part2_out = part2(map);
 
     return 0;
