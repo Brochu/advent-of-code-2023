@@ -85,11 +85,23 @@ void tilt(std::vector<std::string> &lines) {
 }
 
 std::string part2(std::vector<std::string> lines) {
+    u64 total = 0;
+
     debug_map(lines);
-    tilt(lines);
+    for (i32 i = 0; i < 3; i++) {
+        tilt(lines);
+        lines = rotate(lines);
+        tilt(lines);
+        lines = rotate(lines);
+        tilt(lines);
+        lines = rotate(lines);
+        tilt(lines);
+        lines = rotate(lines);
+    }
     printf("------------\n");
     debug_map(lines);
-    return "NotCompleted";
+
+    return std::to_string(total);
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
