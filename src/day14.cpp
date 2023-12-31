@@ -64,13 +64,21 @@ void tilt(std::vector<std::string> &lines) {
     for (i32 i = 1; i < lines.size(); i++) {
         for (i32 j = 0; j < lines[i].size(); j++) {
             if (lines[i][j] == 'O') {
-                i32 hi = i - 1;
-                printf("[START] %i (%i, %i)\n", hi, i, j);
-                while (hi > 0 && lines[hi][j] == '.') {
-                    printf("[WHILE] %i\n", hi);
-                    hi--;
+                //printf("(%i, %i)\n", i, j);
+                for (i32 k = i - 1; k >= 0; k--) {
+                    //printf("k=%i\n", k);
+                    if (lines[k][j] == 'O' || lines[k][j] == '#') {
+                        //printf("[SWAP] k=%i; i=%i\n", k + 1, i);
+                        lines[i][j] = '.';
+                        lines[k + 1][j] = 'O';
+                        break;
+                    }
+                    if (k == 0) {
+                        //printf("[SWAP] To start\n");
+                        lines[i][j] = '.';
+                        lines[0][j] = 'O';
+                    }
                 }
-                printf("[DONE] %i\n", hi);
             }
         }
     }
