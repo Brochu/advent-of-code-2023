@@ -166,7 +166,7 @@ usize part1(System &sys, std::string &part2) {
         hi_total += hi_count;
         //std::cin.ignore(1);
     }
-    printf("lo_total=%lld; hi_total=%lld:\n", lo_total, hi_total);
+    //printf("lo_total=%lld; hi_total=%lld:\n", lo_total, hi_total);
     part2 = "2020";
     return lo_total * hi_total;
 }
@@ -181,6 +181,9 @@ void setup_links(System &sys) {
 
     for (Module &mod : sys.modules) {
         for (char *e : mod.outstr) {
+            if (strcmp(e, "rx") == 0) {
+                printf("%s has rx as output\n", mod.name);
+            }
             const auto it = std::find_if(sys.modules.begin(), sys.modules.end(), [&e](Module &in){
                 return strcmp(e, in.name) == 0;
             });
@@ -210,7 +213,7 @@ void setup_links(System &sys) {
         }
     }
 
-    printf("FLIP: %lld; CONJ: %lld; INPUT: %lld\n", flipcount, conjcount, inpcount);
+    //printf("FLIP: %lld; CONJ: %lld; INPUT: %lld\n", flipcount, conjcount, inpcount);
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
@@ -234,6 +237,7 @@ int run(std::string *part1_out, std::string *part2_out) {
     });
 
     setup_links(sys);
+    debug_system(sys);
     *part1_out = std::to_string(part1(sys, *part2_out));
 
     return 0;
