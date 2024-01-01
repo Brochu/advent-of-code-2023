@@ -1,9 +1,6 @@
 #include "day.h"
 #include "parsing.h"
 
-#include <span>
-#include <iostream>
-
 namespace Solution {
 
 #define DEMO 0
@@ -90,6 +87,7 @@ struct Pulse {
     usize from;
     usize to;
     Power pow;
+    const char *to_name;
 };
 
 struct CacheEntry {
@@ -99,7 +97,7 @@ struct CacheEntry {
     usize out;
 };
 
-usize part1(System &sys) {
+usize part1(System &sys, std::string &part2) {
     usize lo_total = 0;
     usize hi_total = 0;
 
@@ -111,7 +109,7 @@ usize part1(System &sys) {
         usize hi_count = 0;
 
         std::vector<Pulse> stack;
-        stack.push_back({ INT_MAX, start, Power::LOW }); // BUTTON PUSHED
+        stack.push_back({ INT_MAX, start, Power::LOW, "" }); // BUTTON PUSHED
 
         usize current = 0;
         while (current < stack.size()) {
@@ -119,22 +117,27 @@ usize part1(System &sys) {
             if (pulse.pow == Power::LOW) lo_count++;
             else if (pulse.pow == Power::HIGH) hi_count++;
             if (pulse.to >= sys.modules.size()) {
+                const char * pname = pulse.pow == Power::LOW ? "LOW" : "HIGH";
+
+                if (pulse.pow == Power::LOW) {
+                    printf("[WOW] Trying to send pulse to invalid module? i=%i name=%s power=%s\n", i, pulse.to_name, pname);
+                }
                 current++;
                 continue;
             }
 
             Module &mod = sys.modules[pulse.to];
             if (mod.type == 'B') { // BCAST
-                for (usize idx : mod.outputs) {
-                    stack.push_back({ pulse.to, idx, pulse.pow });
+                for (i32 i = 0; i < mod.outputs.size(); i++) {
+                    stack.push_back({ pulse.to, mod.outputs[i], pulse.pow, mod.outstr[i] });
                 }
             }
             else if (mod.type == '%'){ // FLIPFLOP
                 if (pulse.pow == Power::LOW) {
                     bool ison = (sys.flip_states & mod.mask) == mod.mask;
                     sys.flip_states ^= mod.mask;
-                    for (usize idx : mod.outputs) {
-                        stack.push_back({ pulse.to, idx, ison ? LOW : HIGH });
+                    for (i32 i = 0; i < mod.outputs.size(); i++) {
+                        stack.push_back({ pulse.to, mod.outputs[i], ison ? LOW : HIGH, mod.outstr[i] });
                     }
                 }
             }
@@ -146,8 +149,8 @@ usize part1(System &sys) {
                     }
                 }
                 Power newpow = check_conjunction(mod) ? Power::LOW : Power::HIGH;
-                for (usize idx : mod.outputs) {
-                    stack.push_back({ pulse.to, idx, newpow });
+                for (i32 i = 0; i < mod.outputs.size(); i++) {
+                    stack.push_back({ pulse.to, mod.outputs[i], newpow, mod.outstr[i] });
                 }
             }
             current++;
@@ -164,11 +167,8 @@ usize part1(System &sys) {
         //std::cin.ignore(1);
     }
     printf("lo_total=%lld; hi_total=%lld:\n", lo_total, hi_total);
+    part2 = "2020";
     return lo_total * hi_total;
-}
-
-std::string part2() {
-    return "NotCompleted";
 }
 
 void setup_links(System &sys) {
@@ -234,10 +234,8 @@ int run(std::string *part1_out, std::string *part2_out) {
     });
 
     setup_links(sys);
-    *part1_out = std::to_string(part1(sys));
-    *part2_out = part2();
+    *part1_out = std::to_string(part1(sys, *part2_out));
 
     return 0;
 }
-
 }
