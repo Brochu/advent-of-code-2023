@@ -11,8 +11,8 @@ namespace Solution {
 #else // ------------------------------------
 #define FILE_PATH ".\\inputs\\day14.txt"
 #endif // ------------------------------------
-//#define CYCLE_COUNT 3
-#define CYCLE_COUNT 1000000000
+#define CYCLE_COUNT 3
+//#define CYCLE_COUNT 1000000000
 
 void debug_map(std::span<std::string> lines) {
     for (std::string &s : lines) {
@@ -81,8 +81,13 @@ std::string part2(std::vector<std::string> lines) {
     debug_map(lines);
     std::vector<std::vector<std::string>> cache;
     auto ptr = cache.end();
+    std::vector<i32> next;
+    next.resize(CYCLE_COUNT);
+    std::vector<i32> count;
+    count.resize(CYCLE_COUNT);
 
-    for (i32 i = 0; i < CYCLE_COUNT; i++) {
+    i32 start = 0;
+    for (i32 i = 0; i < 25; i++) {
         tilt(lines);
         lines = rotate(lines);
         tilt(lines);
@@ -92,23 +97,50 @@ std::string part2(std::vector<std::string> lines) {
         tilt(lines);
         lines = rotate(lines);
 
-        ptr = std::find_if(cache.begin(), cache.end(), [&lines](std::vector<std::string> &in){
-            for (i32 i = 0; i < in.size(); i++) {
-                if (in[i] != lines[i]) return false;
-            }
-            return true;
-        });
-        if (ptr == cache.end()) {
-            cache.push_back(lines);
-        } else {
-            printf("Found cycle! At %i\n", i);
-            break;
-        }
+        printf("------------\n");
+        debug_map(lines);
+        printf("[%i] %lld\n", i, part1(lines));
+
+        //ptr = std::find_if(cache.begin(), cache.end(), [&lines](std::vector<std::string> &in){
+        //    for (i32 i = 0; i < in.size(); i++) {
+        //        if (in[i] != lines[i]) return false;
+        //    }
+        //    return true;
+        //});
+        //if (ptr == cache.end()) {
+        //    cache.push_back(lines);
+        //    next[i] = i + 1;
+        //} else {
+        //    i32 pos = std::distance(cache.begin(), ptr);
+        //    printf("Found cycle! At %i (%i)\n", pos, i);
+        //    next[i] = pos;
+        //    count[pos]++;
+        //    if (count[pos] >= 2) {
+        //        start = i;
+        //        break;
+        //    }
+        //}
     }
-    printf("------------\n");
-    debug_map(lines);
 
-    //TODO: Find result based off of cycle position
+    //printf("at=%i, next[at]=%i, count[at]=%i, test=%i\n", start, next[start], count[next[start]], next[start-1]);
+    //i32 rest = CYCLE_COUNT - start;
+    //i32 mod = rest % 7;
+    //printf("rest=%i, mod=%i\n", rest, mod);
+
+    //for (i32 i = 0; i < mod; i++) {
+    //    tilt(lines);
+    //    lines = rotate(lines);
+    //    tilt(lines);
+    //    lines = rotate(lines);
+    //    tilt(lines);
+    //    lines = rotate(lines);
+    //    tilt(lines);
+    //    lines = rotate(lines);
+
+    //    printf("------------\n");
+    //    debug_map(lines);
+    //    printf("%lld\n", part1(lines));
+    //}
 
     return std::to_string(part1(lines));
 }
