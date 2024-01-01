@@ -1,7 +1,6 @@
 #include "day.h"
 #include "parsing.h"
 
-#include <iostream>
 #include <span>
 
 namespace Solution {
@@ -69,11 +68,11 @@ void debug_map(Map &map, std::vector<usize> &energized, Beam &beam) {
     }
 }
 
-std::string part1(Map &map) {
+usize part1(Map &map, Beam start) {
     std::vector<Beam> beams;
     std::vector<usize> energized;
     std::vector<Beam> history;
-    beams.push_back({ 0, 0, Direction::RIGHT });
+    beams.push_back(start);
     history.push_back(beams.back());
 
     while (!beams.empty()) {
@@ -136,20 +135,49 @@ std::string part1(Map &map) {
     Beam dud { 0, 0, RIGHT };
     //debug_map(map, energized, dud);
 
-    return std::to_string(energized.size());
+    return energized.size();
 }
 
-std::string part2(Map &map) {
-    usize energized = 0;
-    return std::to_string(energized);
+usize part2(Map &map) {
+    usize max = 0;
+
+    // TOP ROW
+    for (i32 i = 0; i < map.width; i++) {
+        usize res = part1(map, { i, 0, Direction::DOWN });
+        //printf("[From %i] = %lld\n", i, res);
+        if (res > max) max = res;
+    }
+
+    // LEFT SIDE
+    for (i32 i = 0; i < map.height; i++) {
+        usize res = part1(map, { 0, i, Direction::RIGHT });
+        //printf("[From %i] = %lld\n", i, res);
+        if (res > max) max = res;
+    }
+
+    // RIGHT SIDE
+    for (i32 i = 0; i < map.height; i++) {
+        usize res = part1(map, { (i32)map.width - 1, i, Direction::LEFT });
+        //printf("[From %i] = %lld\n", i, res);
+        if (res > max) max = res;
+    }
+
+    // BOTTOM ROW
+    for (i32 i = 0; i < map.width; i++) {
+        usize res = part1(map, { i, (i32)map.height - 1, Direction::UP });
+        //printf("[From %i] = %lld\n", i, res);
+        if (res > max) max = res;
+    }
+
+    return max;
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
     std::string in = INCLUDE_STR(FILE_PATH);
     Map map = create_map(in);
 
-    *part1_out = part1(map);
-    *part2_out = part2(map);
+    *part1_out = std::to_string(part1(map, { 0, 0, Direction::RIGHT }));
+    *part2_out = std::to_string(part2(map));
 
     destroy_map(std::move(map));
     return 0;
