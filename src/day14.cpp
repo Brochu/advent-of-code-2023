@@ -80,6 +80,7 @@ std::string part2(std::vector<std::string> lines) {
 
     debug_map(lines);
     std::vector<std::vector<std::string>> cache;
+    auto ptr = cache.end();
 
     for (i32 i = 0; i < CYCLE_COUNT; i++) {
         tilt(lines);
@@ -91,13 +92,13 @@ std::string part2(std::vector<std::string> lines) {
         tilt(lines);
         lines = rotate(lines);
 
-        auto pred = [&lines](std::vector<std::string> &in){
+        ptr = std::find_if(cache.begin(), cache.end(), [&lines](std::vector<std::string> &in){
             for (i32 i = 0; i < in.size(); i++) {
                 if (in[i] != lines[i]) return false;
             }
             return true;
-        };
-        if (std::find_if(cache.begin(), cache.end(), pred) == cache.end()) {
+        });
+        if (ptr == cache.end()) {
             cache.push_back(lines);
         } else {
             printf("Found cycle! At %i\n", i);
@@ -106,6 +107,8 @@ std::string part2(std::vector<std::string> lines) {
     }
     printf("------------\n");
     debug_map(lines);
+
+    //TODO: Find result based off of cycle position
 
     return std::to_string(part1(lines));
 }
