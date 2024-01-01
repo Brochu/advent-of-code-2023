@@ -11,7 +11,6 @@ namespace Solution {
 #else // ------------------------------------
 #define FILE_PATH ".\\inputs\\day18.txt"
 #endif // ------------------------------------
-#define FOUND(l, p) (std::find_if(std::begin(l), std::end(l), p) != std::end(l))
 
 struct Instr {
     char dir;
@@ -27,55 +26,42 @@ struct Pos {
     i32 y;
 };
 
-i64 part1(std::span<Instr> prog) {
-    std::vector<Pos> trench;
-    i32 minx = INT_MAX;
-    i32 miny = INT_MAX;
-    i32 maxx = 0;
-    i32 maxy = 0;
-
+std::vector<Pos> build_corners(std::span<Instr> prog, float &parameter) {
     Pos current { 0, 0 };
+    std::vector<Pos> corners;
+    corners.push_back(current);
+
     for (Instr &i : prog) {
-        for (i32 j = 0; j < i.steps; j++) {
-            if (i.dir == 'U') current.y--;
-            else if (i.dir == 'L') current.x--;
-            else if (i.dir == 'R') current.x++;
-            else if (i.dir == 'D') current.y++;
-            trench.push_back(current);
+        if (i.dir == 'R') current.x += i.steps;
+        else if (i.dir == 'L') current.x -= i.steps;
+        else if (i.dir == 'D') current.y += i.steps;
+        else if (i.dir == 'U') current.y -= i.steps;
 
-            //printf("[NEW] (%i, %i)\n", current.x, current.y);
-            minx = std::min(minx, current.x);
-            miny = std::min(miny, current.y);
-            maxx = std::max(maxx, current.x);
-            maxy = std::max(maxy, current.y);
-        }
+        corners.push_back(current);
+        parameter += i.steps;
     }
-    minx--; miny--;
-    maxx+=2; maxy+=2;
-    //show_map(trench, minx, maxx, miny, maxy);
-
-    //TODO: This is slow, look up information on shoelace formula, should optim this
-    std::vector<Pos> stack;
-    stack.push_back({ 1, 1 });
-    while (!stack.empty()) {
-        Pos current = stack.back();
-        stack.pop_back();
-
-        auto pred = [&current](Pos &in){ return in.x == current.x && in.y == current.y; };
-        if (FOUND(trench, pred)) { continue; }
-        trench.push_back(current);
-
-        stack.push_back({ current.x, current.y - 1 });
-        stack.push_back({ current.x - 1, current.y });
-        stack.push_back({ current.x + 1, current.y });
-        stack.push_back({ current.x, current.y + 1 });
-    }
-    //show_map(trench, minx, maxx, miny, maxy);
-
-    return trench.size();
+    return corners;
 }
 
-i64 part2() {
+float calc_shoelace(std::vector<Pos> &corners, float parameter) {
+    float calc = 0.f;
+    for (i32 i = 0; i < corners.size() - 1; i++) {
+        const Pos &p0 = corners[i + 0];
+        const Pos &p1 = corners[i + 1];
+
+        calc += (p0.x - p1.x) * (p0.y + p1.y);
+    }
+    return (parameter/2) + (calc/2) + 1;
+}
+
+std::string part1(std::span<Instr> prog) {
+    float parameter = 0.f;
+    std::vector<Pos> corners = build_corners(prog, parameter);
+
+    return std::to_string(calc_shoelace(corners, parameter));
+}
+
+i64 part2(std::span<Instr> prog) {
     return 0;
 }
 
@@ -90,8 +76,8 @@ int run(std::string *part1_out, std::string *part2_out) {
         prog.push_back({ dir, atoi(elems[0]), elems[1] });
     });
 
-    *part1_out = std::to_string(part1(prog));
-    *part2_out = std::to_string(part2());
+    *part1_out = part1(prog);
+    *part2_out = std::to_string(part2(prog));
 
     return 0;
 }
