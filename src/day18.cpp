@@ -5,7 +5,7 @@
 
 namespace Solution {
 
-#define DEMO 0
+#define DEMO 1
 #if DEMO == 1 // ------------------------------------
 #define FILE_PATH ".\\inputs\\day18_demo1.txt"
 #else // ------------------------------------
@@ -27,21 +27,7 @@ struct Pos {
     i32 y;
 };
 
-void show_map(std::span<Pos> trench, i32 fromx, i32 tox, i32 fromy, i32 toy) {
-    for (i32 i = fromy; i < toy; i++) {
-        for (i32 j = fromx; j < tox; j++) {
-            auto pred = [&i, &j](Pos &in){ return in.x == j && in.y == i; };
-            if (FOUND(trench, pred)) {
-                printf("# ");
-            } else {
-                printf(". ");
-            }
-        }
-        printf("\n");
-    }
-}
-
-std::string part1(std::span<Instr> prog) {
+i64 part1(std::span<Instr> prog) {
     std::vector<Pos> trench;
     i32 minx = INT_MAX;
     i32 miny = INT_MAX;
@@ -86,11 +72,11 @@ std::string part1(std::span<Instr> prog) {
     }
     //show_map(trench, minx, maxx, miny, maxy);
 
-    return std::to_string(trench.size());
+    return trench.size();
 }
 
-std::string part2() {
-    return "NotCompleted";
+i64 part2() {
+    return 0;
 }
 
 int run(std::string *part1_out, std::string *part2_out) {
@@ -104,8 +90,8 @@ int run(std::string *part1_out, std::string *part2_out) {
         prog.push_back({ dir, atoi(elems[0]), elems[1] });
     });
 
-    *part1_out = part1(prog);
-    *part2_out = part2();
+    *part1_out = std::to_string(part1(prog));
+    *part2_out = std::to_string(part2());
 
     return 0;
 }
