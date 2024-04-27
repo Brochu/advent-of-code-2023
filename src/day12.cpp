@@ -19,15 +19,35 @@ struct Record {
     std::vector<u8>nums;
 };
 
-size_t part1(std::span<Record> recs) {
-    size_t result = 0;
+enum State {
+    Error = -1,
+    Start,
+    Ok,
+    Broken,
+    End,
+};
+
+struct Exec {
+    State state;
+    std::vector<u8> stack;
+
+    u64 hash;
+};
+
+void debug(std::span<Record> recs) {
     for (Record r : recs) {
-        printf(" -> '%s'\n", r.sp);
+        printf("Record -> '%s'\n", r.sp);
+        printf("\t");
         for (u8 n : r.nums) {
             printf(" %i,", n);
         }
         printf("\n");
     }
+}
+
+size_t part1(std::span<Record> records) {
+    size_t result = 0;
+    debug(records);
     return result;
 }
 
@@ -46,7 +66,7 @@ i32 run(std::string *part1_out, std::string *part2_out) {
         records.emplace_back(springs, nums);
     });
 
-    *part1_out = std::to_string(part1({ records.begin(), records.begin() + 1 }));
+    *part1_out = std::to_string(part1({ records.begin() + 1, records.begin() + 2 }));
     //*part2_out = std::to_string(part2());
 
     return 0;
