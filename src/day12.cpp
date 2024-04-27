@@ -1,7 +1,9 @@
 #include "day.h"
 #include "parsing.h"
 
+#include <cstdlib>
 #include <string>
+#include <span>
 
 namespace Solution {
 
@@ -12,28 +14,40 @@ namespace Solution {
 #define FILE_PATH ".\\inputs\\day12.txt"
 #endif // ------------------------------------
 
-size_t part1()
-{
-    size_t result = 0;
-    return result;
-}
+struct Record {
+    char *sp;
+    std::vector<u8>nums;
+};
 
-
-size_t part2()
-{
+size_t part1(std::span<Record> recs) {
     size_t result = 0;
+    for (Record r : recs) {
+        printf(" -> '%s'\n", r.sp);
+        for (u8 n : r.nums) {
+            printf(" %i,", n);
+        }
+        printf("\n");
+    }
     return result;
 }
 
 i32 run(std::string *part1_out, std::string *part2_out) {
     std::string in = INCLUDE_STR(FILE_PATH);
-    std::vector<char *> lines = Parse::split_str(std::move(in), "\n");
+    std::vector<Record> records;
+    Parse::enum_str(std::move(in), "\n", [&records](char *token){
+        char *springs = nullptr;
+        char *vals = nullptr;
+        Parse::split_once(token, " ", &springs, &vals);
 
-    for (int i = 0; i < lines.size(); i++) {
-        printf(" * '%s'\n", lines[i]);
-    }
-    *part1_out = std::to_string(part1());
-    *part2_out = std::to_string(part2());
+        std::vector<u8> nums;
+        Parse::enum_char(vals, ",", [&nums](char *token) {
+            nums.emplace_back(atoi(token));
+        });
+        records.emplace_back(springs, nums);
+    });
+
+    *part1_out = std::to_string(part1({ records.begin(), records.begin() + 1 }));
+    //*part2_out = std::to_string(part2());
 
     return 0;
 }

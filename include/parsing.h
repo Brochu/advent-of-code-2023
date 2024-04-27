@@ -12,11 +12,6 @@ std::vector<char*> split_char(char *str, const std::string &separator);
 void split_once(char *str, const std::string &separator, char **first, char **rest);
 
 template<typename Fn>
-void enum_str(std::string &&str, const std::string &separator, Fn func) {
-    enum_char(str.data(), separator, func);
-}
-
-template<typename Fn>
 void enum_char(char *str, const std::string &separator, Fn func) {
     char *token, *nextt = nullptr;
 
@@ -25,6 +20,11 @@ void enum_char(char *str, const std::string &separator, Fn func) {
         func(token);
         token = strtok_s(NULL, separator.c_str(), &nextt);
     }
+}
+
+template<typename Fn>
+void enum_str(std::string &&str, const std::string &separator, Fn func) {
+    enum_char(str.data(), separator, func);
 }
 
 }
