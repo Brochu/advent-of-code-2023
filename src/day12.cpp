@@ -22,32 +22,43 @@ struct Record {
 enum State {
     Error = -1,
     Start,
-    Ok,
-    Broken,
+    Out,
+    In,
     End,
 };
 
 struct Exec {
     State state;
     std::vector<u8> stack;
-
-    u64 hash;
 };
+Exec fork() {
+    return {};
+}
 
 void debug(std::span<Record> recs) {
     for (Record r : recs) {
         printf("Record -> '%s'\n", r.sp);
         printf("\t");
-        for (u8 n : r.nums) {
-            printf(" %i,", n);
+        for (auto it = r.nums.rbegin(); it != r.nums.rend(); it++) {
+            printf(" %i,", *it);
         }
         printf("\n");
     }
 }
 
-size_t part1(std::span<Record> records) {
-    size_t result = 0;
+u64 part1(std::span<Record> records) {
     debug(records);
+
+    for (Record &r : records) {
+        std::vector<Exec> runs;
+        runs.emplace_back(State::Start, r.nums);
+
+        while (!runs[0].stack.empty()) {
+            printf("Getting next item in the stack! %i\n", runs[0].stack.back());
+            runs[0].stack.pop_back();
+        }
+    }
+    u64 result = 0;
     return result;
 }
 
@@ -61,7 +72,7 @@ i32 run(std::string *part1_out, std::string *part2_out) {
 
         std::vector<u8> nums;
         Parse::enum_char(vals, ",", [&nums](char *token) {
-            nums.emplace_back(atoi(token));
+            nums.emplace(nums.begin(), atoi(token));
         });
         records.emplace_back(springs, nums);
     });
