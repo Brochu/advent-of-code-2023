@@ -35,31 +35,61 @@ enum State {
     In,
     End,
 };
+const char *state_name(State s) {
+    switch (s) {
+        case Error: return "Error";
+        case Start: return "Start";
+        case Out: return "Out";
+        case In: return "In";
+        case End: return "End";
+    }
+    return "n/a";
+}
 
 struct Exec {
     State state;
     std::vector<u8> stack;
 };
 void exec_step(Exec &e, char in) {
-    printf("[AUTOMATE] InState = %i, stack = %i, input = %c\n", e.state, e.stack.back(), in);
+    printf("[AUTOMATE] InState = %s, stack = %i, input = %c\n", state_name(e.state), e.stack.back(), in);
 
-    if (in == '\0') {
+    // Endings
+    if (in == '\0' && e.stack.empty()) {
+        e.state = State::End;
+        return;
+    }
+    else if (in == '\0' && !e.stack.empty()) {
         e.state = State::Error;
+        return;
     }
 
-    printf("[AUTOMATE] OutState = %i, stack = %i\n", e.state, e.stack.back());
+    // Progress
+    //TODO: Handle #
+    if (in == '.') {
+        if (!e.stack.empty() && e.stack.back() == 0) {
+            e.stack.pop_back();
+        }
+        else if (!e.stack.empty() && e.stack.back() > 0) {
+            e.state = State::Error;
+            return;
+        }
+        e.state = State::Out;
+    }
+
+    printf("[AUTOMATE] OutState = %s, stack = %i\n", state_name(e.state), e.stack.back());
 }
 
 u64 calc_arrangements(const Record &rec) {
     debug(rec);
 
-    Exec e { Start, rec.nums };
+    Exec e { State::Start, rec.nums };
     char *next = rec.sp;
     while(e.state != State::End && e.state != State::Error) {
         exec_step(e, *next);
         next++;
     }
 
+    printf("[ARRANGEMENTS] Finished with state: %s\n", state_name(e.state));
     return 1;
 }
 
