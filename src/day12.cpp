@@ -19,6 +19,15 @@ struct Record {
     std::vector<u8>nums;
 };
 
+void debug(const Record &rec) {
+    printf("Record -> '%s'\n", rec.sp);
+    printf("\t");
+    for (auto it = rec.nums.rbegin(); it != rec.nums.rend(); it++) {
+        printf(" %i,", *it);
+    }
+    printf("\n-------------------\n");
+}
+
 enum State {
     Error = -1,
     Start,
@@ -31,39 +40,40 @@ struct Exec {
     State state;
     std::vector<u8> stack;
 };
-Exec fork() {
-    return {};
+void exec_step(Exec &e, char in) {
+    printf("[AUTOMATE] InState = %i, stack = %i, input = %c\n", e.state, e.stack.back(), in);
+
+    if (in == '\0') {
+        e.state = State::Error;
+    }
+
+    printf("[AUTOMATE] OutState = %i, stack = %i\n", e.state, e.stack.back());
 }
 
-void debug(std::span<Record> recs) {
-    for (Record r : recs) {
-        printf("Record -> '%s'\n", r.sp);
-        printf("\t");
-        for (auto it = r.nums.rbegin(); it != r.nums.rend(); it++) {
-            printf(" %i,", *it);
-        }
-        printf("\n");
+u64 calc_arrangements(const Record &rec) {
+    debug(rec);
+
+    Exec e { Start, rec.nums };
+    char *next = rec.sp;
+    while(e.state != State::End && e.state != State::Error) {
+        exec_step(e, *next);
+        next++;
     }
+
+    return 1;
 }
 
 u64 part1(std::span<Record> records) {
-    debug(records);
-
-    for (Record &r : records) {
-        std::vector<Exec> runs;
-        runs.emplace_back(State::Start, r.nums);
-
-        while (!runs[0].stack.empty()) {
-            printf("Getting next item in the stack! %i\n", runs[0].stack.back());
-            runs[0].stack.pop_back();
-        }
+    u64 sum = 0;
+    for (Record &rec : records) {
+        sum += calc_arrangements(rec);
     }
-    u64 result = 0;
-    return result;
+    return sum;
 }
 
 i32 run(std::string *part1_out, std::string *part2_out) {
-    std::string in = INCLUDE_STR(FILE_PATH);
+    //std::string in = INCLUDE_STR(FILE_PATH);
+    std::string in = "#.#.### 1,1,3";
     std::vector<Record> records;
     Parse::enum_str(std::move(in), "\n", [&records](char *token){
         char *springs = nullptr;
@@ -77,8 +87,8 @@ i32 run(std::string *part1_out, std::string *part2_out) {
         records.emplace_back(springs, nums);
     });
 
-    *part1_out = std::to_string(part1({ records.begin() + 1, records.begin() + 2 }));
-    //*part2_out = std::to_string(part2());
+    *part1_out = std::to_string(part1(records));
+    *part2_out = "NotCompleted";
 
     return 0;
 }
