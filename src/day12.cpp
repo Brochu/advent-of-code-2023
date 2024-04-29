@@ -51,19 +51,17 @@ struct Exec {
     std::vector<u8> stack;
 };
 void print_exec(Exec &e) {
-    /*
     if (e.stack.empty()) {
         printf("[EXEC] State = %s, empty stack\n", state_name(e.state));
     }
     else {
         printf("[EXEC] State = %s, top of stack = %i\n", state_name(e.state), e.stack.back());
     }
-    */
 }
 
 void exec_step(Exec &e, char in) {
     //printf("[STEP] START (with input = %c)\n", in);
-    print_exec(e);
+    //print_exec(e);
 
     // Endings
     if (in == '\0' && (e.stack.empty() || e.stack.back() == 0)) {
@@ -93,7 +91,7 @@ void exec_step(Exec &e, char in) {
         e.state = State::In;
     }
 
-    print_exec(e);
+    //print_exec(e);
     //printf("[STEP] END (with input = %c)\n", in);
 }
 
@@ -121,7 +119,12 @@ u64 part1(std::span<Record> records) {
 
 i32 run(std::string *part1_out, std::string *part2_out) {
     //std::string in = INCLUDE_STR(FILE_PATH);
-    std::string in = "#.#.### 1,1,3\n.#...#....###. 1,1,3\n.#.###.#.###### 1,3,1,6\n####.#...#... 4,1,1\n#....######..#####. 1,6,5\n.###.##....# 3,2,1";
+    std::string in = "#.#.### 1,1,3\n"
+                    ".#...#....###. 1,1,3\n"
+                    ".#.###.#.###### 1,3,1,6\n"
+                    "####.#...#... 4,1,1\n"
+                    "#....######..#####. 1,6,5\n"
+                    ".###.##....# 3,2,1";
     std::vector<Record> records;
     Parse::enum_str(std::move(in), "\n", [&records](char *token){
         char *springs = nullptr;
