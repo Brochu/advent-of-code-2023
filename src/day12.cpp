@@ -19,7 +19,7 @@ struct Record {
     std::vector<u8>nums;
 };
 
-void debug(const Record &rec) {
+void debug(Record &rec) {
     printf("Record -> '%s'\n", rec.sp);
     printf("\t");
     for (auto it = rec.nums.rbegin(); it != rec.nums.rend(); it++) {
@@ -35,15 +35,15 @@ enum State {
     In,
     End,
 };
-const char *state_name(State s) {
+char *state_name(State s) {
     switch (s) {
-        case Error: return "Error";
-        case Start: return "Start";
-        case Out: return "Out";
-        case In: return "In";
-        case End: return "End";
+        case Error: return (char*)"Error";
+        case Start: return (char*)"Start";
+        case Out: return (char*)"Out";
+        case In: return (char*)"In";
+        case End: return (char*)"End";
     }
-    return "n/a";
+    return (char*)"n/a";
 }
 
 struct Exec {
@@ -54,7 +54,7 @@ void exec_step(Exec &e, char in) {
     printf("[AUTOMATE] InState = %s, stack = %i, input = %c\n", state_name(e.state), e.stack.back(), in);
 
     // Endings
-    if (in == '\0' && e.stack.empty()) {
+    if (in == '\0' && (e.stack.empty() || e.stack.back() == 0)) {
         e.state = State::End;
         return;
     }
@@ -64,7 +64,6 @@ void exec_step(Exec &e, char in) {
     }
 
     // Progress
-    //TODO: Handle #
     if (in == '.') {
         if (!e.stack.empty() && e.stack.back() == 0) {
             e.stack.pop_back();
@@ -75,11 +74,21 @@ void exec_step(Exec &e, char in) {
         }
         e.state = State::Out;
     }
+    else if (in == '#') {
+        if (e.stack.empty() || e.stack.back() == 0) {
+            e.state = State::Error;
+            return;
+        }
+        else if (!e.stack.empty()) {
+            e.stack.back()--;
+        }
+        e.state = State::In;
+    }
 
     printf("[AUTOMATE] OutState = %s, stack = %i\n", state_name(e.state), e.stack.back());
 }
 
-u64 calc_arrangements(const Record &rec) {
+u64 calc_arrangements(Record &rec) {
     debug(rec);
 
     Exec e { State::Start, rec.nums };
