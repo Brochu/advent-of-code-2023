@@ -50,8 +50,18 @@ struct Exec {
     State state;
     std::vector<u8> stack;
 };
+void print_exec(Exec &e) {
+    if (e.stack.empty()) {
+        printf("[EXEC] State = %s, empty stack\n", state_name(e.state));
+    }
+    else {
+        printf("[EXEC] State = %s, top of stack = %i\n", state_name(e.state), e.stack.back());
+    }
+}
+
 void exec_step(Exec &e, char in) {
-    printf("[AUTOMATE] InState = %s, stack = %i, input = %c\n", state_name(e.state), e.stack.back(), in);
+    printf("[STEP] START (with input = %c)\n", in);
+    print_exec(e);
 
     // Endings
     if (in == '\0' && (e.stack.empty() || e.stack.back() == 0)) {
@@ -68,10 +78,6 @@ void exec_step(Exec &e, char in) {
         if (!e.stack.empty() && e.stack.back() == 0) {
             e.stack.pop_back();
         }
-        else if (!e.stack.empty() && e.stack.back() > 0) {
-            e.state = State::Error;
-            return;
-        }
         e.state = State::Out;
     }
     else if (in == '#') {
@@ -85,7 +91,8 @@ void exec_step(Exec &e, char in) {
         e.state = State::In;
     }
 
-    printf("[AUTOMATE] OutState = %s, stack = %i\n", state_name(e.state), e.stack.back());
+    print_exec(e);
+    printf("[STEP] END (with input = %c)\n", in);
 }
 
 u64 calc_arrangements(Record &rec) {
