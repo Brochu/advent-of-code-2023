@@ -47,6 +47,7 @@ char *state_name(State s) {
 }
 
 struct Exec {
+    char input;
     State state;
     std::vector<u8> stack;
 };
@@ -59,28 +60,28 @@ void print_exec(Exec &e) {
     }
 }
 
-void exec_step(Exec &e, char in) {
+void exec_step(Exec &e) {
     //printf("[STEP] START (with input = %c)\n", in);
     //print_exec(e);
 
     // Endings
-    if (in == '\0' && (e.stack.empty() || e.stack.back() == 0)) {
+    if (e.input == '\0' && (e.stack.empty() || e.stack.back() == 0)) {
         e.state = State::End;
         return;
     }
-    else if (in == '\0' && !e.stack.empty()) {
+    else if (e.input == '\0' && !e.stack.empty()) {
         e.state = State::Error;
         return;
     }
 
     // Progress
-    if (in == '.') {
+    if (e.input == '.') {
         if (!e.stack.empty() && e.stack.back() == 0) {
             e.stack.pop_back();
         }
         e.state = State::Out;
     }
-    else if (in == '#') {
+    else if (e.input == '#') {
         if (e.stack.empty() || e.stack.back() == 0) {
             e.state = State::Error;
             return;
@@ -98,10 +99,14 @@ void exec_step(Exec &e, char in) {
 u64 calc_arrangements(Record &rec) {
     debug(rec);
 
-    Exec e { State::Start, rec.nums };
+    Exec e { '\0', State::Start, rec.nums };
     char *next = rec.sp;
     while(e.state != State::End && e.state != State::Error) {
-        exec_step(e, *next);
+        //TODO: Need to handle '?'
+        // Create a new exec so we check both
+        // Try to collapse duplicate executions
+        e.input = *next;
+        exec_step(e);
         next++;
     }
 
